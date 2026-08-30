@@ -17,6 +17,19 @@
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
     'August', 'September', 'October', 'November', 'December'];
   var BRANCH_ORDER = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+  var ZODIAC_ORDER = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
+  var STORE_KEY = 'tongshu-my-sign';
+
+  function getMySign() {
+    try {
+      var v = localStorage.getItem(STORE_KEY);
+      return ZODIAC_ORDER.indexOf(v) >= 0 ? v : '';
+    } catch (e) { return ''; }
+  }
+
+  function setMySign(v) {
+    try { localStorage.setItem(STORE_KEY, v); } catch (e) { /* private mode etc. */ }
+  }
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
 
@@ -100,6 +113,23 @@
     $('sha').innerHTML = '煞<strong>' + esc(sha) + '</strong> — the Sha spirit sits in the ' +
       esc(I.direction(sha)) + '; avoid facing ' + esc(I.direction(sha).toLowerCase()) +
       ' for important undertakings.';
+
+    var mine = getMySign();
+    var note = $('my-clash');
+    if (!mine) {
+      note.hidden = true;
+    } else if (mine === animal) {
+      note.hidden = false;
+      note.className = 'my-clash my-clash--bad';
+      note.innerHTML = '⚠ 今日冲你 — this day clashes with your sign (' +
+        esc(mine) + ' ' + esc(I.zodiac(mine)) +
+        '). Postpone weddings, contracts and other major undertakings if you can.';
+    } else {
+      note.hidden = false;
+      note.className = 'my-clash my-clash--ok';
+      note.textContent = '无冲 — no clash with your sign (' + mine + ' ' +
+        I.zodiac(mine) + ') today.';
+    }
   }
 
   function renderDirections(l) {
@@ -173,12 +203,15 @@
 
   function runFinder() {
     var term = $('finder-select').value;
+    var mine = getMySign();
     var results = [];
+    var skipped = 0;
     var d = new Date(current);
     for (var i = 1; i <= 120 && results.length < 6; i++) {
       d.setDate(d.getDate() + 1);
       var l = getLunar(d);
       if (l.getDayYi().indexOf(term) >= 0) {
+        if (mine && l.getDayChongShengXiao() === mine) { skipped++; continue; }
         results.push({
           date: new Date(d),
           lunar: l,
@@ -192,7 +225,13 @@
         '<p class="finder__empty">No favorable day found in the next 120 days.</p>';
       return;
     }
-    $('finder-results').innerHTML = results.map(function (r) {
+    var skipNote = skipped
+      ? '<p class="finder__skip">' + skipped + ' otherwise-favorable day' +
+        (skipped > 1 ? 's' : '') + ' skipped — ' +
+        (skipped > 1 ? 'they clash' : 'it clashes') + ' with your sign (' +
+        esc(mine) + ' ' + esc(I.zodiac(mine)) + ').</p>'
+      : '';
+    $('finder-results').innerHTML = skipNote + results.map(function (r) {
       var off = I.OFFICERS[r.officer] || { en: '' };
       return '<button type="button" class="finder__day" data-date="' + ymd(r.date) + '">' +
         '<span class="finder__date">' + esc(WEEKDAYS[r.date.getDay()].slice(0, 3)) + ' ' +
@@ -226,8 +265,24 @@
     runFinder();
   }
 
+  function renderSignOptions() {
+    var mine = getMySign();
+    $('my-sign').innerHTML = '<option value="">— not set —</option>' +
+      ZODIAC_ORDER.map(function (z) {
+        return '<option value="' + z + '"' + (z === mine ? ' selected' : '') + '>' +
+          z + ' ' + esc(I.zodiac(z)) + '</option>';
+      }).join('');
+  }
+
   function init() {
     renderFinderOptions();
+    renderSignOptions();
+
+    $('my-sign').addEventListener('change', function () {
+      setMySign(this.value);
+      render();
+      runFinder();
+    });
 
     $('btn-prev').addEventListener('click', function () { shift(-1); });
     $('btn-next').addEventListener('click', function () { shift(1); });
