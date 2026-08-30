@@ -15,6 +15,34 @@ For any date it shows, fully bilingual (中文 + English):
 
 Navigate with the ◀ ▶ buttons, the date picker, the **Today** button, or the arrow keys.
 
+## 奇門時盤 Qi Men Hourly Chart
+
+A second app in this repo ([`qimen.html`](qimen.html)) casts the live
+**Qimen Dunjia (奇門遁甲)** chart for the current Chinese double-hour (時辰)
+in the classic nine-palace (九宮) layout, fully bilingual:
+
+- **Hourly 9-box chart** — earth & heaven stems, nine stars (九星), eight
+  doors (八門) and eight gods (八神) in every palace, drawn south-up
+- **Cast by the book** — 時家奇門, rotating-plate school (轉盤), ju number by
+  the 拆補 method from exact solar-term times; Chief (值符) and Envoy (值使)
+  highlighted
+- **Live** — recasts itself automatically the moment the double-hour turns,
+  with a countdown to the next chart; browse other hours with ◀ ▶ or the
+  date-time picker
+- **Formations & omens** — classic stem-pair patterns (青龍返首, 飛鳥跌穴,
+  白虎猖狂, …), void (空亡), horse (馬星), tomb (入墓), punishment (擊刑),
+  door confinement (門迫), fu-yin/fan-yin, each palace rated 大吉…大凶
+- **奇門兵法 Warcraft of the hour** — the Chief's seat, the direction to act
+  toward, "back to Life, strike at Death" (背生擊死), directions to avoid,
+  movement timing, and an eight-door table routing everyday affairs
+  (wealth, talks, exams, hiding, lawsuits…) to their directions
+- **Tap any palace** for a full bilingual reading of its god, star, door,
+  stems and formations
+
+Its sideload APK is [`dist/qimen-sideload.apk`](dist/qimen-sideload.apk)
+(rebuild with `cd android-qimen && ./build.sh`), and the engine has a test
+suite: `node scripts/test-qimen.js`.
+
 ## Running it
 
 It is a fully static site with no build step:
@@ -46,18 +74,21 @@ Then open the `android/` folder in Android Studio, let Gradle sync, and use
 **Build → Generate Signed App Bundle** with your upload keystore. After any
 change to the web app, run `npm run sync` again before rebuilding.
 
-### Sideload APK (`android-sideload/`)
+### Sideload APKs (`android-sideload/`, `android-qimen/`)
 
-A ready-to-install APK is at
-[`dist/tongshu-sideload.apk`](dist/tongshu-sideload.apk) — a thin WebView
-shell around the same web app, working fully offline. Copy it to your phone,
-allow "install unknown apps" when prompted, and open it (Android 6.0+).
+Ready-to-install APKs live in `dist/` — thin WebView shells around the web
+apps, working fully offline. Copy one to your phone, allow "install unknown
+apps" when prompted, and open it (Android 6.0+):
 
-To rebuild it without the Android SDK (open-source toolchain only):
+- [`dist/tongshu-sideload.apk`](dist/tongshu-sideload.apk) — the Tong Shu almanac
+- [`dist/qimen-sideload.apk`](dist/qimen-sideload.apk) — the Qi Men hourly chart
+
+To rebuild them without the Android SDK (open-source toolchain only):
 
 ```sh
 sudo apt-get install aapt apksigner zipalign dalvik-exchange default-jdk
-cd android-sideload && ./build.sh
+cd android-sideload && ./build.sh   # Tong Shu
+cd android-qimen && ./build.sh      # Qi Men
 ```
 
 Both builds sign with locally generated keys. Android only allows *updating*

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>奇門時盤 Qi Men Hourly Chart</title>
+<meta name="description" content="A live Qimen Dunjia (奇門遁甲) hourly chart: the nine-palace plate for the current double-hour with doors, stars, gods, formations, and classic warcraft strategy.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23a63b22'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23fdf8ec' font-family='serif' font-weight='bold'%3E奇%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya+Sans:wght@400;500;700&family=Noto+Serif+TC:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="css/qimen.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead__inner">
+    <div class="brand">
+      <span class="brand__zh">奇門時盤</span>
+      <span class="brand__en">Qi Men Hourly Chart</span>
+    </div>
+    <nav class="nav" aria-label="Hour navigation">
+      <button id="btn-prev" type="button" aria-label="Previous double-hour">◀</button>
+      <input id="dt-input" type="datetime-local" aria-label="Pick a date and time">
+      <button id="btn-next" type="button" aria-label="Next double-hour">▶</button>
+      <button id="btn-now" type="button" class="btn-now">Now 現在</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- Chart header: pillars, term, ju, chief & envoy -->
+  <section class="card head" aria-label="Chart moment">
+    <p class="head__clock"><span id="clock-date"></span> <b id="clock-time"></b> <span id="live-badge" class="live" hidden>LIVE 實時</span></p>
+    <div class="pillars">
+      <div class="pillar"><b id="p-year"></b><span>Year 年柱</span></div>
+      <div class="pillar"><b id="p-month"></b><span>Month 月柱</span></div>
+      <div class="pillar"><b id="p-day"></b><span>Day 日柱</span></div>
+      <div class="pillar pillar--hour"><b id="p-time"></b><span>Hour 時柱</span></div>
+    </div>
+    <p class="head__ju" id="ju-line"></p>
+    <p class="head__fu" id="fu-line"></p>
+    <p class="head__hour" id="hour-line"></p>
+  </section>
+
+  <!-- The nine-palace plate. South on top, as tradition draws it. -->
+  <section class="card plate-card" aria-label="Nine palace chart">
+    <p class="compass compass--top">南 S</p>
+    <div class="plate-row">
+      <p class="compass compass--left">東 E</p>
+      <div class="plate" id="plate"></div>
+      <p class="compass compass--right">西 W</p>
+    </div>
+    <p class="compass compass--bottom">北 N</p>
+    <p class="plate-note">南上北下，如古盤之制。點擊任一宮觀其詳。<br>Drawn south-up in the classical manner. Tap a palace for details.</p>
+  </section>
+
+  <!-- Selected palace detail -->
+  <section class="card detail" id="detail" hidden aria-label="Palace detail"></section>
+
+  <!-- Warcraft & suggestions -->
+  <section class="card strategy" aria-labelledby="h-strategy">
+    <h2 id="h-strategy"><span class="h-zh">奇門兵法</span>Warcraft of the Hour</h2>
+    <div id="strategy"></div>
+  </section>
+
+  <section class="card strategy" aria-labelledby="h-uses">
+    <h2 id="h-uses"><span class="h-zh">八門司職</span>Route Your Affairs</h2>
+    <p class="card-sub">Which direction serves which purpose this hour.</p>
+    <div id="door-uses"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>Calendrical data by the open-source <a href="https://github.com/6tail/lunar-javascript" rel="noopener">lunar-javascript</a> engine (MIT);
+  chart cast by the 拆補 method, rotating-plate school (時家奇門轉盤).
+  Qimen Dunjia is cultural heritage — enjoy its counsel as tradition, not fact.</p>
+</footer>
+
+<script src="js/vendor/lunar.js"></script>
+<script src="js/qimen-engine.js"></script>
+<script src="js/qimen-data.js"></script>
+<script src="js/qimen-app.js"></script>
+</body>
+</html>
