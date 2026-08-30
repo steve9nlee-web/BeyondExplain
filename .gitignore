@@ -1,1 +1,3 @@
 dist/*.idsig
+node_modules/
+www/

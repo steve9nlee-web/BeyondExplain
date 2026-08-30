@@ -1,0 +1,8 @@
+{
+  "appId": "com.beyondexplain.tongshu",
+  "appName": "通勝 Tong Shu",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}

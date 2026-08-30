@@ -27,24 +27,41 @@ python3 -m http.server 8000
 
 Or publish the repository with GitHub Pages as-is.
 
-## Android app (APK)
+## Android app
 
-A ready-to-install APK is at [`dist/tongshu.apk`](dist/tongshu.apk) — a thin
-WebView shell around the same web app, working fully offline. To install,
-copy it to your phone, allow "install unknown apps" for your browser/file
-manager when prompted, and open it (Android 6.0+).
+There are two Android builds in this repo:
 
-To rebuild it yourself:
+### Play Store build (`android/`, Capacitor)
+
+A standard Capacitor + Gradle project targeting SDK 36, used to produce the
+`.aab` app bundle that Google Play requires. With [Node.js](https://nodejs.org)
+and [Android Studio](https://developer.android.com/studio) installed:
+
+```sh
+npm install
+npm run sync          # assembles www/ and syncs it into android/
+```
+
+Then open the `android/` folder in Android Studio, let Gradle sync, and use
+**Build → Generate Signed App Bundle** with your upload keystore. After any
+change to the web app, run `npm run sync` again before rebuilding.
+
+### Sideload APK (`android-sideload/`)
+
+A ready-to-install APK is at
+[`dist/tongshu-sideload.apk`](dist/tongshu-sideload.apk) — a thin WebView
+shell around the same web app, working fully offline. Copy it to your phone,
+allow "install unknown apps" when prompted, and open it (Android 6.0+).
+
+To rebuild it without the Android SDK (open-source toolchain only):
 
 ```sh
 sudo apt-get install aapt apksigner zipalign dalvik-exchange default-jdk
-cd android && ./build.sh
+cd android-sideload && ./build.sh
 ```
 
-The build downloads the compile-time Android stub jar from Maven Central and
-signs with a locally generated key (`android/build/tongshu.keystore`, not
-committed). Android only allows *updating* an app signed with the same key —
-an APK from a fresh keystore needs the old app uninstalled first.
+Both builds sign with locally generated keys. Android only allows *updating*
+an app signed with the same key — keep your keystore safe and backed up.
 
 ## How it works
 

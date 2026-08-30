@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@capacitor/android": "8.5.0",
+    "@capacitor/cli": "8.5.0",
+    "@capacitor/core": "8.5.0"
+  },
+  "name": "tongshu-almanac",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tong Shu daily almanac web app + Capacitor Android wrapper",
+  "scripts": {
+    "build:www": "node scripts/build-www.js",
+    "sync": "npm run build:www && cap sync android"
+  }
+}
