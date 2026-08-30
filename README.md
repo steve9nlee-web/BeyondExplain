@@ -27,6 +27,25 @@ python3 -m http.server 8000
 
 Or publish the repository with GitHub Pages as-is.
 
+## Android app (APK)
+
+A ready-to-install APK is at [`dist/tongshu.apk`](dist/tongshu.apk) — a thin
+WebView shell around the same web app, working fully offline. To install,
+copy it to your phone, allow "install unknown apps" for your browser/file
+manager when prompted, and open it (Android 6.0+).
+
+To rebuild it yourself:
+
+```sh
+sudo apt-get install aapt apksigner zipalign dalvik-exchange default-jdk
+cd android && ./build.sh
+```
+
+The build downloads the compile-time Android stub jar from Maven Central and
+signs with a locally generated key (`android/build/tongshu.keystore`, not
+committed). Android only allows *updating* an app signed with the same key —
+an APK from a fresh keystore needs the old app uninstalled first.
+
 ## How it works
 
 All calendrical math — lunar conversion, sexagenary cycle, solar terms, the
