@@ -15,6 +15,30 @@ For any date it shows, fully bilingual (中文 + English):
 
 Navigate with the ◀ ▶ buttons, the date picker, the **Today** button, or the arrow keys.
 
+## Work Quotation Calculator
+
+A second app in this repo ([`quote.html`](quote.html)) prices a job from five
+inputs and produces an itemized quotation:
+
+1. **Number of users** — a set number are included in the base fee, extras
+   are charged one-time and per-year licences
+2. **Online or offline** — online adds server/API setup and yearly hosting
+3. **Database** — none, local (on the device), or a central server database
+4. **Updates & data kept on** — phone only, cloud, or your own NAS, each with
+   its own setup and yearly cost
+5. **Years of use** — recurring costs multiply by the term, with a
+   multi-year discount at 3+ and 5+ years
+
+The quotation shows one-time and per-year line items, subtotals, discount and
+the grand total (plus cost per user per year). Every rate — base fee,
+per-user prices, hosting, maintenance %, discounts, currency symbol — is
+editable under **Adjust pricing rates** and remembered on the device. Use
+**Copy quotation** or **Share** to send the itemized quote as text.
+
+Its sideload APK is [`dist/quotation-sideload.apk`](dist/quotation-sideload.apk)
+(rebuild with `cd android-quote && ./build.sh`). It works fully offline and
+requests no permissions.
+
 ## Running it
 
 It is a fully static site with no build step:
