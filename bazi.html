@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>八字 Bazi Four Pillars Chart</title>
+<meta name="description" content="Cast your Bazi (Four Pillars of Destiny) chart: year, month, day and hour pillars with ten gods and hidden stems, five-element balance, 10-year luck pillars, yearly luck and feng shui guidance.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23a63b22'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23fdf8ec' font-family='serif' font-weight='bold'%3E命%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya+Sans:wght@400;500;700&family=Noto+Serif+TC:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/bazi.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead__inner">
+    <div class="brand">
+      <span class="brand__zh">八字</span>
+      <span class="brand__en">Bazi Four Pillars of Destiny</span>
+    </div>
+    <nav class="nav" aria-label="Site navigation">
+      <a class="nav-link" href="index.html">通勝 Almanac</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap bazi-wrap">
+
+  <!-- Birth data -->
+  <section class="card card--wide birth" aria-labelledby="h-birth">
+    <h2 id="h-birth"><span class="h-zh">生辰</span>Birth Details</h2>
+    <p class="card-sub">Enter your birth date and time (local civil time of your birthplace). The hour decides the Hour Pillar; gender decides the direction of the luck cycle.</p>
+    <form id="birth-form" class="birth__form">
+      <label>出生日期 Date
+        <input id="birth-date" type="date" required min="1902-01-01" max="2050-12-31">
+      </label>
+      <label>出生時間 Time
+        <input id="birth-time" type="time" value="12:00">
+      </label>
+      <label class="birth__unknown">
+        <input id="hour-unknown" type="checkbox">
+        時辰不詳 Hour unknown
+      </label>
+      <fieldset class="birth__gender">
+        <legend>性別 Gender</legend>
+        <label><input type="radio" name="gender" value="1" checked> 男 Male</label>
+        <label><input type="radio" name="gender" value="0"> 女 Female</label>
+      </fieldset>
+      <button type="submit" class="btn-cast">排盤 Cast Chart</button>
+    </form>
+  </section>
+
+  <div id="results" hidden>
+
+    <!-- The chart -->
+    <section class="card card--wide" aria-labelledby="h-chart">
+      <h2 id="h-chart"><span class="h-zh">命盤</span>The Four Pillars</h2>
+      <p class="card-sub" id="chart-birth-line"></p>
+      <div class="chart-scroll">
+        <table class="chart" id="chart-table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">年柱<span>Year</span></th>
+              <th scope="col">月柱<span>Month</span></th>
+              <th scope="col">日柱<span>Day</span></th>
+              <th scope="col">時柱<span>Hour</span></th>
+            </tr>
+          </thead>
+          <tbody id="chart-body"></tbody>
+        </table>
+      </div>
+      <p class="chart-extra" id="chart-extra"></p>
+    </section>
+
+    <div class="col2">
+      <!-- Day master -->
+      <section class="card" aria-labelledby="h-dm">
+        <h2 id="h-dm"><span class="h-zh">日主</span>Day Master</h2>
+        <div class="dm" id="dm-box"></div>
+      </section>
+
+      <!-- Five elements -->
+      <section class="card" aria-labelledby="h-wx">
+        <h2 id="h-wx"><span class="h-zh">五行</span>Five-Element Balance</h2>
+        <div class="wx-bars" id="wx-bars"></div>
+        <div class="wx-verdict" id="wx-verdict"></div>
+      </section>
+    </div>
+
+    <!-- Luck pillars -->
+    <section class="card card--wide" aria-labelledby="h-luck">
+      <h2 id="h-luck"><span class="h-zh">大運</span>10-Year Luck Pillars</h2>
+      <p class="card-sub" id="luck-start"></p>
+      <div class="luck-strip" id="luck-strip" role="tablist" aria-label="Luck pillar decades"></div>
+    </section>
+
+    <!-- Yearly luck of selected decade -->
+    <section class="card card--wide" aria-labelledby="h-years">
+      <h2 id="h-years"><span class="h-zh">流年</span>Yearly Luck<span class="h-note" id="years-decade"></span></h2>
+      <p class="card-sub">Each year's stem and branch measured against your favorable elements. 吉 favors action; 凶 favors caution.</p>
+      <div class="years" id="years"></div>
+    </section>
+
+    <!-- Annual feng shui -->
+    <section class="card card--wide fengshui" aria-labelledby="h-fs">
+      <h2 id="h-fs"><span class="h-zh">開運風水</span>Good-Luck Feng Shui<span class="h-note" id="fs-year-note"></span></h2>
+      <div class="fs-grid" id="fs-grid"></div>
+      <div class="fs-taisui" id="fs-taisui"></div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <p>Calculations by the open-source <a href="https://github.com/6tail/lunar-javascript" rel="noopener">lunar-javascript</a> engine (MIT).
+  Bazi (八字) and feng shui readings here follow simplified traditional rules; they are cultural heritage and entertainment, not fact or advice.
+  Your birth details stay on this device only.</p>
+</footer>
+
+<script src="js/vendor/lunar.js"></script>
+<script src="js/bazi.js"></script>
+</body>
+</html>

@@ -113,6 +113,18 @@ body {
 
 .nav button:hover { border-color: var(--cinnabar); color: var(--cinnabar); }
 
+.nav .nav-bazi {
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--leaf);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+}
+
+.nav .nav-bazi:hover { border-color: var(--cinnabar); color: var(--cinnabar); }
+
 .nav button:focus-visible, .nav input:focus-visible,
 .finder__day:focus-visible, select:focus-visible {
   outline: 2px solid var(--cinnabar);

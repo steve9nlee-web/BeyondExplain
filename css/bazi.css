@@ -1,0 +1,321 @@
+/* 八字 Bazi chart page — extends the Tong Shu design system (css/style.css) */
+
+:root {
+  --wood: #3d7a4f;
+  --fire: #b5432f;
+  --earth: #9a7b2f;
+  --metal: #7d7062;
+  --water: #2f5d8a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --wood: #6fb583;
+    --fire: #e0705a;
+    --earth: #c9a24b;
+    --metal: #b8ae9c;
+    --water: #6a9cc9;
+  }
+}
+
+:root[data-theme="dark"] {
+  --wood: #6fb583;
+  --fire: #e0705a;
+  --earth: #c9a24b;
+  --metal: #b8ae9c;
+  --water: #6a9cc9;
+}
+
+.el-wood { color: var(--wood); }
+.el-fire { color: var(--fire); }
+.el-earth { color: var(--earth); }
+.el-metal { color: var(--metal); }
+.el-water { color: var(--water); }
+
+.el-bg-wood { background: var(--wood); }
+.el-bg-fire { background: var(--fire); }
+.el-bg-earth { background: var(--earth); }
+.el-bg-metal { background: var(--metal); }
+.el-bg-water { background: var(--water); }
+
+.bazi-wrap { display: block; max-width: 1100px; margin: 0 auto; }
+.bazi-wrap > .card, .bazi-wrap .col2 { margin-bottom: 20px; }
+
+.nav-link {
+  font: inherit;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--leaf);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+}
+.nav-link:hover { border-color: var(--cinnabar); color: var(--cinnabar); }
+
+/* ---- birth form ---- */
+
+.birth__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 20px;
+}
+
+.birth__form label { display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem; color: var(--ink-soft); }
+
+.birth__form input[type="date"], .birth__form input[type="time"] {
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 7px 10px;
+  color-scheme: inherit;
+}
+
+.birth__unknown { flex-direction: row !important; align-items: center; gap: 6px !important; padding-bottom: 8px; }
+
+.birth__gender { border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 12px 8px; margin: 0; }
+.birth__gender legend { font-size: 0.8rem; color: var(--ink-soft); padding: 0 4px; }
+.birth__gender label { flex-direction: row; align-items: center; gap: 5px; display: inline-flex; margin-right: 12px; font-size: 0.95rem; color: var(--ink); }
+
+.btn-cast {
+  font: inherit;
+  font-weight: 700;
+  color: var(--seal-text);
+  background: var(--cinnabar);
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 22px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+.btn-cast:hover { background: var(--cinnabar-deep); }
+.btn-cast:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 2px; }
+
+/* ---- pillar table ---- */
+
+.chart-scroll { overflow-x: auto; }
+
+.chart { width: 100%; min-width: 620px; border-collapse: collapse; }
+
+.chart th, .chart td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.chart thead th {
+  font-family: "Noto Serif TC", serif;
+  font-size: 1.05rem;
+  background: var(--lucky-bg);
+  color: var(--cinnabar);
+}
+.chart thead th span { display: block; font-family: "Marcellus", Georgia, serif; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--ink-soft); }
+
+.chart tbody th {
+  font-family: "Noto Serif TC", serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: var(--unlucky-bg);
+  white-space: nowrap;
+}
+.chart tbody th span { display: block; font-family: "Marcellus", Georgia, serif; font-size: 0.68rem; font-weight: 400; letter-spacing: 0.06em; color: var(--ink-soft); }
+
+.chart td.big b {
+  display: block;
+  font-family: "Noto Serif TC", serif;
+  font-size: 2.1rem;
+  line-height: 1.15;
+  font-weight: 900;
+}
+.chart td .sub { display: block; font-size: 0.72rem; color: var(--ink-soft); }
+
+.god { display: inline-flex; flex-direction: column; font-family: "Noto Serif TC", serif; font-weight: 700; }
+.god i { font-style: normal; font-family: "Marcellus", Georgia, serif; font-weight: 400; font-size: 0.7rem; color: var(--ink-soft); }
+.god--dm { color: var(--cinnabar); }
+
+.hides { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.hide-item { display: inline-flex; flex-direction: column; align-items: center; }
+.hide-item b { font-family: "Noto Serif TC", serif; font-size: 1.15rem; font-weight: 700; }
+.hide-item i { font-style: normal; font-size: 0.68rem; color: var(--ink-soft); }
+
+.nayin, .dishi { font-family: "Noto Serif TC", serif; font-size: 0.95rem; }
+.chart td.unk { color: var(--ink-soft); font-family: "Noto Serif TC", serif; }
+
+.chart-extra { margin: 12px 0 0; font-size: 0.85rem; color: var(--ink-soft); }
+.chart-extra b { font-family: "Noto Serif TC", serif; color: var(--ink); }
+
+/* ---- two-column row ---- */
+
+.col2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 760px) { .col2 { grid-template-columns: 1fr; } }
+
+/* ---- day master ---- */
+
+.dm { display: flex; gap: 16px; align-items: flex-start; }
+
+.dm__char {
+  font-family: "Noto Serif TC", serif;
+  font-size: 3.6rem;
+  font-weight: 900;
+  line-height: 1;
+  padding: 14px 16px;
+  border: 2px solid currentColor;
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.dm__title { margin: 0 0 6px; font-weight: 700; }
+.dm__desc { margin: 0 0 8px; color: var(--ink-soft); }
+.dm__strength { margin: 0; font-size: 0.9rem; }
+
+/* ---- five elements ---- */
+
+.wx-row { display: grid; grid-template-columns: 96px 1fr 40px; align-items: center; gap: 10px; margin-bottom: 8px; }
+.wx-label { font-family: "Noto Serif TC", serif; font-weight: 700; }
+.wx-label i { font-style: normal; font-family: "Marcellus", Georgia, serif; font-weight: 400; font-size: 0.72rem; color: var(--ink-soft); }
+.wx-track { height: 12px; background: var(--unlucky-bg); border-radius: 6px; overflow: hidden; }
+.wx-fill { display: block; height: 100%; border-radius: 6px; }
+.wx-val { font-size: 0.8rem; color: var(--ink-soft); text-align: right; }
+
+.wx-verdict { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 10px; }
+.wx-verdict p { margin: 0 0 6px; font-size: 0.92rem; }
+.wx-note { color: var(--ink-soft); font-size: 0.85rem !important; }
+
+.el-tag {
+  display: inline-block;
+  font-family: "Noto Serif TC", serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 1px 10px;
+  margin-right: 4px;
+}
+
+/* ---- luck pillars ---- */
+
+.luck-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+.yun {
+  flex: 0 0 auto;
+  min-width: 108px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 10px 12px;
+  cursor: pointer;
+}
+.yun:hover { border-color: var(--cinnabar); }
+.yun--sel { border-color: var(--cinnabar); box-shadow: inset 0 0 0 1px var(--cinnabar); background: var(--lucky-bg); }
+.yun:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 2px; }
+
+.yun__age { font-size: 0.72rem; color: var(--ink-soft); }
+.yun__gz b { font-family: "Noto Serif TC", serif; font-size: 1.7rem; font-weight: 900; }
+.yun__gz--early { font-family: "Noto Serif TC", serif; font-size: 1.35rem; font-weight: 700; color: var(--ink-soft); }
+.yun__god { font-size: 0.72rem; color: var(--ink-soft); white-space: nowrap; }
+.yun__years { font-size: 0.78rem; }
+.yun__now {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--seal-text);
+  background: var(--cinnabar);
+  border-radius: 999px;
+  padding: 1px 8px;
+  margin-top: 2px;
+}
+
+.h-note { font-family: "Alegreya Sans", sans-serif; font-size: 0.85rem; font-weight: 400; color: var(--ink-soft); }
+
+/* ---- yearly luck ---- */
+
+.years {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.ynode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 8px;
+  text-align: center;
+}
+.ynode--now { border-color: var(--cinnabar); box-shadow: inset 0 0 0 1px var(--cinnabar); }
+
+.ynode__year { font-family: "Marcellus", Georgia, serif; font-size: 0.95rem; }
+.ynode__gz b { font-family: "Noto Serif TC", serif; font-size: 1.45rem; font-weight: 900; }
+.ynode__animal { font-size: 0.75rem; color: var(--ink-soft); }
+.ynode__god { font-size: 0.72rem; color: var(--ink-soft); }
+.ynode__taisui { font-size: 0.72rem; color: var(--cinnabar); font-weight: 700; }
+.ynode__age { font-size: 0.7rem; color: var(--ink-soft); }
+
+.yrate {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 9px;
+  margin-top: 3px;
+}
+.yrate--best { color: var(--seal-text); background: var(--cinnabar); }
+.yrate--good { color: var(--cinnabar); border: 1px solid var(--cinnabar); }
+.yrate--flat { color: var(--ink-soft); border: 1px solid var(--line); }
+.yrate--care { color: var(--earth); border: 1px solid var(--earth); }
+.yrate--bad { color: var(--seal-text); background: var(--ink-soft); }
+
+/* ---- feng shui ---- */
+
+.fs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.fs-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.fs-card h3 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; font-size: 1rem; }
+.fs-card p { margin: 0 0 5px; font-size: 0.88rem; }
+
+.fs-primary {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--seal-text);
+  background: var(--gold);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.fs-taisui { border-top: 1px dashed var(--line); padding-top: 10px; }
+.fs-taisui p { margin: 0 0 7px; font-size: 0.92rem; }
+.fs-warn { color: var(--cinnabar); font-weight: 500; }
+.fs-avoid { color: var(--ink-soft); font-size: 0.85rem !important; }
+
+@media (max-width: 640px) {
+  .dm { flex-direction: column; }
+  .birth__form { align-items: stretch; }
+  .birth__form label { flex: 1 1 140px; }
+  .btn-cast { flex: 1 1 100%; }
+}

@@ -15,6 +15,27 @@ For any date it shows, fully bilingual (中文 + English):
 
 Navigate with the ◀ ▶ buttons, the date picker, the **Today** button, or the arrow keys.
 
+## 八字 Bazi chart (`bazi.html`)
+
+A companion page casts a full **Four Pillars of Destiny** chart from a birth
+date, time and gender, fully bilingual:
+
+- **The four pillars** — year/month/day/hour stems & branches with 十神 Ten
+  Gods, 藏干 hidden stems, 納音 Na Yin and the 十二長生 life stages, plus the
+  Life/Body palaces and conception pillar
+- **日主 Day Master** — the day stem's nature and a strong/weak reading
+- **五行 Five-element balance** — weighted element bars and the derived
+  favorable (喜用神) and unfavorable (忌神) elements
+- **大運 10-year luck pillars** — the whole luck cycle with start age, current
+  decade highlighted; tap any decade to expand it
+- **流年 Yearly luck** — each year of the chosen decade rated 大吉/吉/平/慎/凶
+  against the favorable elements, with 值/沖太歲 Tai Sui flags
+- **開運風水 Good-luck feng shui** — lucky colors, directions, numbers and
+  room-by-room enhancers for the favorable elements, plus this year's Tai Sui
+  advice
+
+Birth details are kept in `localStorage` on the device only.
+
 ## Running it
 
 It is a fully static site with no build step:
@@ -69,7 +90,10 @@ All calendrical math — lunar conversion, sexagenary cycle, solar terms, the
 建除 officers, 宜/忌 tables, hour gods — comes from the vendored, MIT-licensed
 [lunar-javascript](https://github.com/6tail/lunar-javascript) engine
 (`js/vendor/lunar.js`). `js/i18n.js` adds an English gloss for every term the
-engine emits; `js/app.js` renders the daily leaf and the day finder.
+engine emits; `js/app.js` renders the daily leaf and the day finder;
+`js/bazi.js` renders the Bazi chart page, using the engine's `EightChar`
+(pillars, hidden stems, Na Yin) and `Yun` (luck-pillar cycle) APIs together
+with its own simplified strength/favorable-element heuristics.
 
 Dates use the device's local time zone. Traditional almanacs are computed for
 China Standard Time, so day boundaries can differ by one day for users far
