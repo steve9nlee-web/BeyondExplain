@@ -96,7 +96,7 @@ body {
   color: var(--ink-soft);
 }
 
-.nav { display: flex; align-items: center; gap: 8px; }
+.nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
 .nav button, .nav input[type="date"] {
   font: inherit;
