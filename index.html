@@ -60,7 +60,7 @@
 
   <div class="col">
 
-    <section class="card" aria-labelledby="h-acts">
+    <section class="card card--wide" aria-labelledby="h-acts">
       <h2 id="h-acts"><span class="h-zh">宜忌</span>Daily Activities</h2>
       <p class="card-sub">What the almanac favors and warns against today.</p>
       <div class="acts">
@@ -75,6 +75,12 @@
       </div>
     </section>
 
+    <section class="card card--wide" aria-labelledby="h-hours">
+      <h2 id="h-hours"><span class="h-zh">時辰</span>Auspicious Hours</h2>
+      <p class="card-sub">The twelve double-hours, ruled 吉 (lucky) or 凶 (unlucky) by the hour gods.</p>
+      <div class="hours" id="hours"></div>
+    </section>
+
     <section class="card clash" aria-labelledby="h-clash">
       <h2 id="h-clash"><span class="h-zh">沖煞</span>Clash &amp; Sha</h2>
       <p id="clash"></p>
@@ -84,12 +90,6 @@
         <select id="my-sign"></select>
       </div>
       <p id="my-clash" class="my-clash" hidden></p>
-    </section>
-
-    <section class="card" aria-labelledby="h-hours">
-      <h2 id="h-hours"><span class="h-zh">時辰</span>Auspicious Hours</h2>
-      <p class="card-sub">The twelve double-hours, ruled 吉 (lucky) or 凶 (unlucky) by the hour gods.</p>
-      <div class="hours" id="hours"></div>
     </section>
 
     <section class="card" aria-labelledby="h-dirs">
@@ -107,7 +107,7 @@
       <div id="pengzu"></div>
     </section>
 
-    <section class="card finder" aria-labelledby="h-finder">
+    <section class="card card--wide finder" aria-labelledby="h-finder">
       <h2 id="h-finder"><span class="h-zh">擇日</span>Find an Auspicious Day</h2>
       <p class="card-sub">Pick an activity and see the next favorable days after the selected date.</p>
       <select id="finder-select" aria-label="Choose an activity"></select>

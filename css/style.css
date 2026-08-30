@@ -71,7 +71,7 @@ body {
 }
 
 .masthead__inner {
-  max-width: 1120px;
+  max-width: 1520px;
   margin: 0 auto;
   padding: 14px 20px;
   display: flex;
@@ -124,12 +124,12 @@ body {
 /* ---- layout ---- */
 
 .wrap {
-  max-width: 1120px;
+  max-width: 1520px;
   margin: 0 auto;
-  padding: 28px 20px 64px;
+  padding: 28px 24px 64px;
   display: grid;
-  grid-template-columns: minmax(320px, 420px) 1fr;
-  gap: 28px;
+  grid-template-columns: minmax(320px, 430px) 1fr;
+  gap: 32px;
   align-items: start;
 }
 
@@ -138,6 +138,7 @@ body {
 }
 
 .card {
+  min-width: 0;
   background: var(--leaf);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -165,7 +166,13 @@ body {
 
 .card > .card-sub { margin: 0 0 14px; font-size: 0.85rem; color: var(--ink-soft); }
 
-.col { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+.col { display: grid; grid-template-columns: 1fr; gap: 28px; min-width: 0; align-items: start; }
+
+/* Spread the cards over two columns on wide screens */
+@media (min-width: 1200px) {
+  .col { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .card--wide { grid-column: 1 / -1; }
+}
 
 /* ---- the calendar leaf ---- */
 
@@ -397,7 +404,20 @@ body {
   gap: 8px;
 }
 
-@media (max-width: 560px) { .hours { grid-template-columns: repeat(4, 1fr); } }
+/* All twelve hours in one row when there is room */
+@media (min-width: 1200px) { .hours { grid-template-columns: repeat(12, 1fr); } }
+
+/* On phones: one swipeable row instead of a squeezed grid */
+@media (max-width: 560px) {
+  .hours {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  .hour { flex: 0 0 74px; scroll-snap-align: start; }
+}
 
 .hour {
   border-radius: var(--radius);
