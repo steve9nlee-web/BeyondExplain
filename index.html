@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>通勝 Tong Shu Daily Almanac</title>
+<meta name="description" content="A daily Chinese almanac (Tong Shu / 老黃曆): lunar date, day pillars, the twelve Day Officers, favorable and unfavorable activities, clash zodiac, lucky hours and directions.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23a63b22'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23fdf8ec' font-family='serif' font-weight='bold'%3E通%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya+Sans:wght@400;500;700&family=Noto+Serif+TC:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead__inner">
+    <div class="brand">
+      <span class="brand__zh">通勝</span>
+      <span class="brand__en">Tong Shu Daily Almanac</span>
+    </div>
+    <nav class="nav" aria-label="Date navigation">
+      <button id="btn-prev" type="button" aria-label="Previous day">◀</button>
+      <input id="date-input" type="date" aria-label="Pick a date">
+      <button id="btn-next" type="button" aria-label="Next day">▶</button>
+      <button id="btn-today" type="button" class="btn-today">Today 今日</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- The daily calendar leaf -->
+  <section class="leaf" aria-label="Almanac page for the selected day">
+    <p class="leaf__month" id="greg-month"></p>
+    <p class="leaf__day" id="greg-day"></p>
+    <p class="leaf__weekday" id="greg-weekday"></p>
+
+    <p class="leaf__lunar-zh" id="lunar-date"></p>
+    <p class="leaf__lunar-year" id="lunar-year"></p>
+    <p class="leaf__lunar-en" id="lunar-date-en"></p>
+
+    <div class="pillars">
+      <div class="pillar"><b id="pillar-year"></b><span>Year 年柱</span></div>
+      <div class="pillar"><b id="pillar-month"></b><span>Month 月柱</span></div>
+      <div class="pillar"><b id="pillar-day"></b><span>Day 日柱</span></div>
+    </div>
+    <p class="leaf__pillar-en" id="pillar-day-en"></p>
+
+    <div class="seal" id="officer-seal" aria-hidden="true"></div>
+    <p class="leaf__officer-name" id="officer-name"></p>
+    <p class="leaf__officer-note" id="officer-note"></p>
+
+    <p class="leaf__mansion" id="mansion"></p>
+    <p class="leaf__god" id="day-god"></p>
+
+    <p class="leaf__festivals" id="festivals" hidden></p>
+  </section>
+
+  <div class="col">
+
+    <section class="card" aria-labelledby="h-acts">
+      <h2 id="h-acts"><span class="h-zh">宜忌</span>Daily Activities</h2>
+      <p class="card-sub">What the almanac favors and warns against today.</p>
+      <div class="acts">
+        <div>
+          <h3><span class="tag tag--yi">宜</span>Favorable</h3>
+          <ul class="chips" id="yi-list"></ul>
+        </div>
+        <div>
+          <h3><span class="tag tag--ji">忌</span>Avoid</h3>
+          <ul class="chips" id="ji-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card clash" aria-labelledby="h-clash">
+      <h2 id="h-clash"><span class="h-zh">沖煞</span>Clash &amp; Sha</h2>
+      <p id="clash"></p>
+      <p id="sha"></p>
+    </section>
+
+    <section class="card" aria-labelledby="h-hours">
+      <h2 id="h-hours"><span class="h-zh">時辰</span>Auspicious Hours</h2>
+      <p class="card-sub">The twelve double-hours, ruled 吉 (lucky) or 凶 (unlucky) by the hour gods.</p>
+      <div class="hours" id="hours"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-dirs">
+      <h2 id="h-dirs"><span class="h-zh">吉神方位</span>Lucky Directions</h2>
+      <div class="dirs" id="directions"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-season">
+      <h2 id="h-season"><span class="h-zh">節氣</span>Solar Term</h2>
+      <div id="season"></div>
+    </section>
+
+    <section class="card pengzu" aria-labelledby="h-pengzu">
+      <h2 id="h-pengzu"><span class="h-zh">彭祖百忌</span>Peng Zu's Taboos</h2>
+      <div id="pengzu"></div>
+    </section>
+
+    <section class="card finder" aria-labelledby="h-finder">
+      <h2 id="h-finder"><span class="h-zh">擇日</span>Find an Auspicious Day</h2>
+      <p class="card-sub">Pick an activity and see the next favorable days after the selected date.</p>
+      <select id="finder-select" aria-label="Choose an activity"></select>
+      <div class="finder__results" id="finder-results"></div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <p>Calculations by the open-source <a href="https://github.com/6tail/lunar-javascript" rel="noopener">lunar-javascript</a> engine (MIT).
+  The Tong Shu (通勝 / 老黃曆) is a cultural tradition; treat its guidance as heritage and fun, not fact.
+  Dates follow your device's local time zone.</p>
+</footer>
+
+<script src="js/vendor/lunar.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
