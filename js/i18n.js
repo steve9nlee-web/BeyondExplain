@@ -123,18 +123,18 @@
 
   /* 建除十二神 — the twelve Day Officers */
   var OFFICERS = {
-    '建': { en: 'Establish', note: 'A day of beginnings — good for setting out, taking office and opening ventures; avoid ground-breaking.' },
-    '除': { en: 'Remove', note: 'A day for clearing away — cleansing, healing and casting off the old.' },
-    '满': { en: 'Full', note: 'A day of abundance — good for rites, gatherings and stocking up; poor for burials.' },
-    '平': { en: 'Balance', note: 'An even, ordinary day — good for smoothing, levelling and routine matters.' },
-    '定': { en: 'Settle', note: 'A day for fixing things in place — betrothals, contracts, foundations and appointments.' },
-    '执': { en: 'Hold', note: 'A day of firm grasp — good for capture, repairs and binding agreements; avoid moving house.' },
-    '破': { en: 'Break', note: 'A day of rupture — favorable only for demolition and tearing down; avoid all else.' },
-    '危': { en: 'Danger', note: 'A precarious day — tread carefully; suited to quiet devotion, not ventures.' },
-    '成': { en: 'Complete', note: 'A day of achievement — excellent for weddings, openings and finishing works.' },
-    '收': { en: 'Receive', note: 'A day of harvest — good for collecting, storing and taking in; poor for setting out.' },
-    '开': { en: 'Open', note: 'A day of openings — good for launches, learning and communication; avoid burials.' },
-    '闭': { en: 'Close', note: 'A day of closure — good for sealing, storing and burial; avoid grand beginnings.' }
+    '建': { en: 'Establish Day', note: 'A day of beginnings — good for setting out, taking office and opening ventures; avoid ground-breaking.' },
+    '除': { en: 'Remove Day', note: 'A day for clearing away — cleansing, healing and casting off the old.' },
+    '满': { en: 'Full Day', note: 'A day of abundance — good for rites, gatherings and stocking up; poor for burials.' },
+    '平': { en: 'Balance Day', note: 'An even, ordinary day — good for smoothing, levelling and routine matters.' },
+    '定': { en: 'Stable Day', note: 'A day for fixing things in place — betrothals, contracts, foundations and appointments.' },
+    '执': { en: 'Initiate Day', note: 'A day of firm grasp — good for capture, repairs and binding agreements; avoid moving house.' },
+    '破': { en: 'Destruction Day', note: 'A day of rupture — favorable only for demolition and tearing down; avoid all else.' },
+    '危': { en: 'Danger Day', note: 'A precarious day — tread carefully; suited to quiet devotion, not ventures.' },
+    '成': { en: 'Success Day', note: 'A day of achievement — excellent for weddings, openings and finishing works.' },
+    '收': { en: 'Receive Day', note: 'A day of harvest — good for collecting, storing and taking in; poor for setting out.' },
+    '开': { en: 'Open Day', note: 'A day of openings — good for launches, learning and communication; avoid burials.' },
+    '闭': { en: 'Close Day', note: 'A day of closure — good for sealing, storing and burial; avoid grand beginnings.' }
   };
 
   /* 二十八宿 — the 28 lunar mansions */
