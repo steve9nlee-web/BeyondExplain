@@ -1,51 +1,19 @@
 /* Tong Shu Daily Almanac — cinnabar & bamboo-paper design system */
 
 :root {
-  --paper: #f4ecdc;
-  --leaf: #fdf8ec;
-  --ink: #2a231c;
-  --ink-soft: #6b5d4a;
-  --cinnabar: #a63b22;
-  --cinnabar-deep: #7f2b17;
-  --gold: #9a7b2f;
-  --line: #d9cbaf;
-  --lucky-bg: #f7e9e2;
-  --unlucky-bg: #eae4d6;
-  --seal-text: #fdf8ec;
-  --shadow: 0 2px 6px rgba(72, 52, 30, 0.12), 0 12px 32px rgba(72, 52, 30, 0.1);
-  --radius: 6px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #191310;
-    --leaf: #241c16;
-    --ink: #ece2d0;
-    --ink-soft: #a8977d;
-    --cinnabar: #d96a4b;
-    --cinnabar-deep: #b34c30;
-    --gold: #c9a24b;
-    --line: #3d3227;
-    --lucky-bg: #33221b;
-    --unlucky-bg: #2a241c;
-    --seal-text: #f7ede0;
-    --shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.35);
-  }
-}
-
-:root[data-theme="dark"] {
-  --paper: #191310;
-  --leaf: #241c16;
+  --paper: #14100c;
+  --leaf: #211a14;
   --ink: #ece2d0;
   --ink-soft: #a8977d;
   --cinnabar: #d96a4b;
-  --cinnabar-deep: #b34c30;
+  --cinnabar-deep: #e08a70;
   --gold: #c9a24b;
   --line: #3d3227;
   --lucky-bg: #33221b;
   --unlucky-bg: #2a241c;
   --seal-text: #f7ede0;
   --shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.35);
+  --radius: 6px;
 }
 
 * { box-sizing: border-box; }
