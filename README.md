@@ -1,5 +1,7 @@
 # 通勝 Tong Shu Daily Almanac
 
+Property of Synapse Asia Sdn Bhd.
+
 A daily Chinese almanac (通勝 / 老黃曆) web app, styled as a tear-off calendar leaf.
 For any date it shows, fully bilingual (中文 + English):
 

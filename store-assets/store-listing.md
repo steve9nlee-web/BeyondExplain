@@ -1,5 +1,7 @@
 # Play Store listing copy
 
+Developer name (shown on the listing): Synapse Asia Sdn Bhd
+
 ## App name (max 30 chars)
 
 通勝 Tong Shu Daily Almanac
@@ -51,10 +53,12 @@ picker.
 
 • 100% offline — no account, no ads, no tracking, no data collection.
 • Bilingual 中文 + English throughout.
-• Light and dark themes.
+• Elegant dark cinnabar-and-gold design.
 
 The Tong Shu is a living piece of Chinese cultural heritage. Enjoy its
 guidance as tradition — for reflection and fun, not as fact.
+
+© Synapse Asia Sdn Bhd
 
 ## Category
 
