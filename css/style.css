@@ -467,7 +467,10 @@ body {
   padding: 0 20px 40px;
   font-size: 0.78rem;
   color: var(--ink-soft);
+  text-align: center;
 }
+
+.footer p { margin: 0 0 6px; }
 
 .footer a { color: var(--cinnabar); }
 
