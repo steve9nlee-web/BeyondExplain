@@ -1,7 +1,6 @@
 package com.beyondexplain.penangstalls.data
 
 import android.content.Context
-import android.location.Location
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
@@ -57,20 +56,19 @@ class StallRepository(private val context: Context) {
 
     /**
      * Sorts every stall by great-circle distance from [origin] and keeps those
-     * inside [radiusMeters]. Android's own [Location.distanceBetween] does the maths.
+     * inside [radiusMeters].
      */
-    fun nearby(catalog: StallCatalog, origin: Location, radiusMeters: Double): List<NearbyStall> {
-        val results = FloatArray(1)
-        return catalog.stalls
+    fun nearby(catalog: StallCatalog, origin: Fix, radiusMeters: Double): List<NearbyStall> =
+        catalog.stalls
             .map { stall ->
-                Location.distanceBetween(
-                    origin.latitude, origin.longitude,
-                    stall.latitude, stall.longitude,
-                    results,
+                NearbyStall(
+                    stall = stall,
+                    meters = Geo.distanceMeters(
+                        origin.latitude, origin.longitude,
+                        stall.latitude, stall.longitude,
+                    ),
                 )
-                NearbyStall(stall, results[0].toDouble())
             }
             .filter { it.meters <= radiusMeters }
             .sortedBy { it.meters }
-    }
 }

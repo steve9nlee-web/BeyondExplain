@@ -1,7 +1,10 @@
 package com.beyondexplain.penangstalls
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,6 +25,21 @@ class MainActivity : ComponentActivity() {
         viewModel.onPermissionResult(grants.values.any { it })
     }
 
+    /**
+     * Upgrading from "Approximate" to "Precise". Android only shows the dialog
+     * again while the user hasn't locked the choice in; once they have, the
+     * only route is the app's settings page.
+     */
+    private val preciseLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            viewModel.refresh()
+        } else {
+            openAppSettings()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -37,11 +55,29 @@ class MainActivity : ComponentActivity() {
                             )
                         )
                     },
+                    onRequestPrecise = {
+                        preciseLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    },
                     onRefresh = { viewModel.refresh(forceReload = true) },
                     onRadiusChange = viewModel::setRadius,
                     onFeedUrlChange = viewModel::setFeedUrl,
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Coming back from the settings page, the permission may now be precise.
+        viewModel.onReturnToForeground()
+    }
+
+    private fun openAppSettings() {
+        startActivity(
+            Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", packageName, null),
+            )
+        )
     }
 }

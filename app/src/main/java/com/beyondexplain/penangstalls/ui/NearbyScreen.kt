@@ -55,6 +55,7 @@ import com.beyondexplain.penangstalls.data.NearbyStall
 fun NearbyScreen(
     state: NearbyUiState,
     onRequestPermission: () -> Unit,
+    onRequestPrecise: () -> Unit,
     onRefresh: () -> Unit,
     onRadiusChange: (Double) -> Unit,
     onFeedUrlChange: (String) -> Unit,
@@ -75,9 +76,9 @@ fun NearbyScreen(
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (state.status) {
                 Status.NeedsPermission -> PermissionPrompt(state.message, onRequestPermission)
-                Status.Locating -> Loading()
+                Status.Locating -> Loading(state)
                 Status.Failed -> ErrorState(state.message, onRefresh)
-                Status.Ready -> ResultList(state)
+                Status.Ready -> ResultList(state, onRequestPrecise)
             }
         }
     }
@@ -93,15 +94,25 @@ fun NearbyScreen(
 }
 
 @Composable
-private fun Loading() {
+private fun Loading(state: NearbyUiState) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         CircularProgressIndicator()
         Spacer(Modifier.height(16.dp))
         Text("Finding where you are…", style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(8.dp))
+        val fix = state.fix
+        Text(
+            if (fix == null) {
+                "Waiting for a GPS lock. This can take a few seconds outdoors, longer indoors."
+            } else {
+                "Best so far: ±${fix.accuracyMeters.toInt()} m. Sharpening…"
+            },
+            style = MaterialTheme.typography.bodySmall,
+        )
     }
 }
 
@@ -140,7 +151,7 @@ private fun ErrorState(message: String?, onRetry: () -> Unit) {
 }
 
 @Composable
-private fun ResultList(state: NearbyUiState) {
+private fun ResultList(state: NearbyUiState, onRequestPrecise: () -> Unit) {
     val context = LocalContext.current
 
     LazyColumn(
@@ -149,6 +160,12 @@ private fun ResultList(state: NearbyUiState) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { Summary(state) }
+
+        if (!state.preciseLocation) {
+            item { PreciseLocationBanner(onRequestPrecise) }
+        } else if (state.coarseFix) {
+            item { CoarseFixBanner(state) }
+        }
 
         if (state.matchCount == 0) {
             item {
@@ -191,7 +208,7 @@ private fun ResultList(state: NearbyUiState) {
 
 @Composable
 private fun Summary(state: NearbyUiState) {
-    val fix = state.location
+    val fix = state.fix
     Card {
         Column(Modifier.padding(16.dp)) {
             Text(
@@ -202,13 +219,86 @@ private fun Summary(state: NearbyUiState) {
             if (fix != null) {
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "You: %.5f, %.5f (±%.0f m)".format(fix.latitude, fix.longitude, fix.accuracy),
+                    "You: %.5f, %.5f · ±%d m%s".format(
+                        fix.latitude,
+                        fix.longitude,
+                        fix.accuracyMeters.toInt(),
+                        if (fix.provider.isNotBlank()) " · ${fix.provider}" else "",
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                 )
+                if (state.refining) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        "Still sharpening the fix — distances may shift.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
             Spacer(Modifier.height(4.dp))
             Text(
                 "Catalogue: ${state.catalogSize} stalls · source: ${state.sourceLabel}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            if (state.usingBundledCatalogue) {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "Bundled stall coordinates are approximate — good to the right street, " +
+                        "not the right stall front. Set a feed URL in Settings for exact positions.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Android 12 lets people grant "Approximate" location, which resolves to
+ * roughly the city block at best and often a kilometre or more. The rings are
+ * meaningless at that scale, so say so and offer the upgrade.
+ */
+@Composable
+private fun PreciseLocationBanner(onRequestPrecise: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        )
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Only approximate location is allowed", style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Android is giving this app a rough position, which can be a kilometre or more " +
+                    "out. The 100 m and 200 m rings cannot work until precise location is on.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(12.dp))
+            Button(onClick = onRequestPrecise) { Text("Allow precise location") }
+        }
+    }
+}
+
+/** The fix came back too loose to separate the near rings. */
+@Composable
+private fun CoarseFixBanner(state: NearbyUiState) {
+    val accuracy = state.fix?.accuracyMeters?.toInt() ?: return
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Your position is only accurate to ±$accuracy m",
+                style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "That is wider than the 100 m and 200 m rings, so treat the nearest entries as " +
+                    "rough. Step outside for a clear view of the sky and tap Refresh — a settled " +
+                    "GPS lock is usually ±5–10 m.",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
