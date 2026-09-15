@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Haze Index</string>
+
+    <string name="menu_change_location">Change location</string>
+    <string name="menu_use_my_location">Use my location</string>
+    <string name="dialog_pick_location">Pick a location</string>
+
+    <string name="pull_hint">Swipe down to pull a fresh reading</string>
+    <string name="observed_at">Reading for %1$s &#183; local time</string>
+    <string name="fetched_at">Fetched %1$s</string>
+    <string name="cached_notice">Showing the last saved reading &#8212; swipe down to refresh</string>
+
+    <string name="section_trend">PM2.5, last 24 hours</string>
+    <string name="section_pollutants">Pollutants right now</string>
+    <string name="section_regions">PSI by region</string>
+    <string name="trend_unavailable">Hourly trend unavailable</string>
+    <string name="trend_peak">peak %1$s µg/m³</string>
+
+    <string name="label_pm25">PM2.5</string>
+    <string name="label_pm10">PM10</string>
+    <string name="label_o3">Ozone</string>
+    <string name="label_no2">NO₂</string>
+    <string name="label_so2">SO₂</string>
+    <string name="label_co">CO</string>
+    <string name="unit_ugm3">µg/m³</string>
+    <string name="unit_mgm3">mg/m³</string>
+
+    <string name="source_line">Source: %1$s</string>
+    <string name="location_permission_denied">Location permission denied. Pick a city instead.</string>
+    <string name="location_unavailable">No recent device location. Pick a city instead.</string>
+    <string name="location_nearby">Near you</string>
+</resources>

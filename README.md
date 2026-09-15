@@ -1,0 +1,82 @@
+# Haze Index
+
+An Android app that shows the current haze / air quality index for Southeast Asian cities.
+**Swipe down on the main screen and it goes out to the internet and pulls a fresh reading** —
+there is no background cache being re-served, every pull is a live HTTP request.
+
+## Download
+
+Pre-built APKs are in [`dist/`](dist/):
+
+| File | Notes |
+| --- | --- |
+| `dist/HazeIndex-1.0.apk` | Release build, ~4.7 MB — install this one |
+| `dist/HazeIndex-1.0-debug.apk` | Debug build, same app with debug symbols |
+
+Install on the phone: copy the APK across (or download it from GitHub on the device), open it,
+and allow "install from unknown sources" when Android asks. Android 7.0 (API 24) or newer.
+
+Both APKs are signed with the standard Android **debug** keystore so they install without extra
+steps. That key is fine for sideloading and testing; swap in a real keystore in
+`app/build.gradle.kts` before publishing to a store.
+
+## What it shows
+
+- **Headline index** — Singapore's official **PSI (24-hour)** from NEA, or **US AQI** everywhere
+  else — colour-coded Good → Hazardous, with the matching health advice.
+- **24-hour PM2.5 trend** — one bar per hour, each coloured by how bad that hour was, so you can
+  see whether the haze is building or clearing.
+- **Current pollutants** — PM2.5, PM10, ozone, NO₂, SO₂ and CO.
+- **PSI by region** for Singapore (north / south / east / west / central).
+- **Last saved reading** when the phone is offline, clearly labelled as cached.
+
+Locations: Singapore, Kuala Lumpur, Johor Bahru, George Town, Kuching, Kota Kinabalu, Jakarta,
+Pekanbaru, Palembang, Pontianak, Bangkok, Chiang Mai, Manila, Bandar Seri Begawan, Hanoi,
+Ho Chi Minh City, Phnom Penh — plus "Use my location", which reads the device's last known
+coarse position (permission is optional; the app works fine without it).
+
+## Data sources
+
+Both are free and need no API key, so there is nothing to configure before the first run.
+
+- [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) —
+  `https://air-quality-api.open-meteo.com/v1/air-quality` — global pollutant concentrations,
+  US AQI and the hourly PM2.5 history.
+- [data.gov.sg / NEA PSI](https://data.gov.sg/) —
+  `https://api-open.data.gov.sg/v2/real-time/api/psi` (falls back to the older
+  `https://api.data.gov.sg/v1/environment/psi`) — the official Singapore PSI, which is the
+  number local advisories quote during a haze episode.
+
+For Singapore the app calls both: NEA supplies the headline PSI and the regional breakdown,
+Open-Meteo supplies the trend line. If NEA is unreachable the app degrades to US AQI rather
+than failing.
+
+## Building from source
+
+```bash
+export ANDROID_HOME=/path/to/android-sdk   # needs platform 35 + build-tools 35.0.0
+./gradlew :app:assembleRelease             # -> app/build/outputs/apk/release/
+./gradlew :app:testDebugUnitTest           # unit tests for the index scales and timestamp parsing
+```
+
+JDK 17 or newer, Gradle wrapper included (8.11.1), AGP 8.7.3, Kotlin 2.0.21.
+
+## Code map
+
+| File | Role |
+| --- | --- |
+| `MainActivity.kt` | UI, swipe-to-refresh wiring, city picker, location |
+| `HazeViewModel.kt` | Refresh state machine; survives rotation |
+| `HazeRepository.kt` | The network calls and JSON parsing; also the US AQI maths |
+| `ReportCache.kt` | Last reading persisted to `SharedPreferences` |
+| `TrendView.kt` | Hand-drawn 24-hour PM2.5 bar chart (no charting dependency) |
+| `Model.kt` | Report model plus the PSI / US AQI / PM2.5 band thresholds |
+
+## Known limitation
+
+The APKs here were compiled and unit-tested in a sandbox whose network policy blocks
+`open-meteo.com` and `data.gov.sg`, so the **live responses could not be exercised end to end** —
+the parsers were written against the documented response shapes and are defensive (missing
+fields, `null` readings, v2→v1 endpoint fallback, `current`→latest-hourly fallback), but the
+first real run on a phone is the first time the JSON is actually seen. If a field ever moves,
+`HazeRepository.kt` is the single place to adjust.
