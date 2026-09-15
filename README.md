@@ -19,8 +19,8 @@ Pre-built APKs are in [`dist/`](dist/):
 
 | File | Notes |
 | --- | --- |
-| `dist/HazeIndex-1.2.apk` | Release build, ~4.7 MB — install this one |
-| `dist/HazeIndex-1.2-debug.apk` | Debug build, same app with debug symbols |
+| `dist/HazeIndex-1.2.1.apk` | Release build, ~4.7 MB — install this one |
+| `dist/HazeIndex-1.2.1-debug.apk` | Debug build, same app with debug symbols |
 
 Install on the phone: copy the APK across (or download it from GitHub on the device), open it,
 and allow "install from unknown sources" when Android asks. Android 7.0 (API 24) or newer.
@@ -142,3 +142,7 @@ place to adjust.
 The same applies to the location code: there is no GPS or geocoder in that sandbox, so the
 follow-the-device path was built and unit tested (distance maths, the Singapore bounding box,
 the stable device-city id) but never exercised against a real fix.
+
+---
+
+Property of Synapse Asia Sdn Bhd

@@ -45,6 +45,7 @@
     <string name="no_reading">&#8211;</string>
 
     <string name="source_line">Source: %1$s</string>
+    <string name="property_notice">Property of Synapse Asia Sdn Bhd</string>
     <string name="location_permission_denied">Location permission is off. Grant it, or pick a city instead.</string>
     <string name="location_services_off">Location is switched off on this device. Turn it on to follow your position.</string>
     <string name="location_no_fix">Could not get a position fix. Swipe down to try again.</string>

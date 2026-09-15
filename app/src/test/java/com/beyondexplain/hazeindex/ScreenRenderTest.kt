@@ -37,6 +37,11 @@ class ScreenRenderTest {
         assertEquals(View.GONE, binding.weatherCard.visibility)
         assertEquals(View.GONE, binding.regionsCard.visibility)
         assertEquals(View.GONE, binding.useMyLocation.visibility)
+        assertEquals(View.VISIBLE, binding.propertyNotice.visibility)
+        assertEquals(
+            themed.getString(R.string.property_notice),
+            binding.propertyNotice.text.toString()
+        )
     }
 
     @Test

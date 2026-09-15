@@ -46,7 +46,7 @@ class ScreenshotTest {
 
         // One full-length render so the cards below the fold can be checked too.
         render(activity, sampleReport(Band.MODERATE))
-        capture(activity, 1080, 3400, File(outputDir, "main-full.png"))
+        capture(activity, 1080, 4900, File(outputDir, "main-full.png"))
         controller.destroy()
     }
 

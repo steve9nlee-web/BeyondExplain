@@ -671,6 +671,17 @@
                     android:text=""
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/propertyNotice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center_horizontal"
+                    android:letterSpacing="0.03"
+                    android:text="@string/property_notice"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
