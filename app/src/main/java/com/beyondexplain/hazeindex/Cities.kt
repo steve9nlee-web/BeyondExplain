@@ -30,13 +30,50 @@ object Cities {
 
     fun byId(id: String?): City? = ALL.firstOrNull { it.id == id }
 
-    /** A city built from device coordinates; never uses the Singapore-only PSI feed. */
+    /**
+     * The device's own position. The id is stable so the cached reading survives the
+     * small coordinate changes that come with every new fix.
+     */
+    const val DEVICE_ID = "device"
+
+    /** Shown while the first fix is still being acquired. */
+    val LOCATING = City(DEVICE_ID, "Locating\u2026", "", 0.0, 0.0)
+
+    fun isDevice(city: City): Boolean = city.id == DEVICE_ID
+
+    /** True once a device city has real coordinates to query. */
+    fun isResolved(city: City): Boolean =
+        !isDevice(city) || city.latitude != 0.0 || city.longitude != 0.0
+
+    /**
+     * A city built from device coordinates. Inside Singapore this still uses the
+     * official NEA PSI, so standing in Singapore gives the same number the local
+     * advisories quote.
+     */
     fun fromCoordinates(name: String, latitude: Double, longitude: Double): City =
         City(
-            id = "loc:${"%.3f".format(latitude)},${"%.3f".format(longitude)}",
+            id = DEVICE_ID,
             name = name,
             country = "",
             latitude = latitude,
-            longitude = longitude
+            longitude = longitude,
+            useNeaPsi = isInSingapore(latitude, longitude)
         )
+
+    private fun isInSingapore(latitude: Double, longitude: Double): Boolean =
+        latitude in 1.13..1.49 && longitude in 103.58..104.13
+}
+
+/** Great-circle distance, kept as plain maths so it can be unit tested off-device. */
+object Geo {
+    private const val EARTH_RADIUS_METRES = 6_371_000.0
+
+    fun distanceMetres(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = kotlin.math.sin(dLat / 2).let { it * it } +
+            kotlin.math.cos(Math.toRadians(lat1)) * kotlin.math.cos(Math.toRadians(lat2)) *
+            kotlin.math.sin(dLon / 2).let { it * it }
+        return 2 * EARTH_RADIUS_METRES * kotlin.math.asin(kotlin.math.sqrt(a).coerceIn(0.0, 1.0))
+    }
 }

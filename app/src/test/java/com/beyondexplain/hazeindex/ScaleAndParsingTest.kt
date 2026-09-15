@@ -1,6 +1,8 @@
 package com.beyondexplain.hazeindex
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
 import org.junit.Test
 
@@ -42,5 +44,34 @@ class ScaleAndParsingTest {
         assertEquals(1789477200L, parseIso8601Seconds("2026-09-15T13:00:00+00:00"))
         assertNull(parseIso8601Seconds(null))
         assertNull(parseIso8601Seconds("not a timestamp"))
+    }
+}
+
+class DeviceLocationLogicTest {
+
+    @Test
+    fun `distance between two points is right to within a few metres`() {
+        // One degree of latitude is ~111.19 km anywhere on the globe.
+        assertEquals(111_195.0, Geo.distanceMetres(1.0, 103.8, 2.0, 103.8), 50.0)
+        // Singapore city centre to Johor Bahru, straight line.
+        val metres = Geo.distanceMetres(1.3521, 103.8198, 1.4927, 103.7414)
+        assertTrue("was $metres", metres in 17_500.0..18_500.0)
+        assertEquals(0.0, Geo.distanceMetres(1.3521, 103.8198, 1.3521, 103.8198), 0.001)
+    }
+
+    @Test
+    fun `a device inside Singapore still gets the official PSI feed`() {
+        assertTrue(Cities.fromCoordinates("Bedok", 1.3236, 103.9273).useNeaPsi)
+        assertFalse(Cities.fromCoordinates("Johor Bahru", 1.4927, 103.7414).useNeaPsi)
+    }
+
+    @Test
+    fun `the device city keeps a stable id so its cached reading survives a move`() {
+        val first = Cities.fromCoordinates("Bedok", 1.3236, 103.9273)
+        val second = Cities.fromCoordinates("Jurong", 1.3329, 103.7436)
+        assertEquals(first.id, second.id)
+        assertTrue(Cities.isDevice(first))
+        assertFalse(Cities.isResolved(Cities.LOCATING))
+        assertTrue(Cities.isResolved(first))
     }
 }

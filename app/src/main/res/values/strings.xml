@@ -3,7 +3,7 @@
     <string name="app_name">Haze Index</string>
 
     <string name="menu_change_location">Change location</string>
-    <string name="menu_use_my_location">Use my location</string>
+    <string name="menu_use_my_location">Follow my location</string>
     <string name="dialog_pick_location">Pick a location</string>
 
     <string name="pull_hint">Swipe down to pull a fresh reading</string>
@@ -27,7 +27,12 @@
     <string name="unit_mgm3">mg/m³</string>
 
     <string name="source_line">Source: %1$s</string>
-    <string name="location_permission_denied">Location permission denied. Pick a city instead.</string>
-    <string name="location_unavailable">No recent device location. Pick a city instead.</string>
+    <string name="location_permission_denied">Location permission is off. Grant it, or pick a city instead.</string>
+    <string name="location_services_off">Location is switched off on this device. Turn it on to follow your position.</string>
+    <string name="location_no_fix">Could not get a position fix. Swipe down to try again.</string>
     <string name="location_nearby">Near you</string>
+    <string name="locating">Finding your location\u2026</string>
+    <string name="following_device">Following your location \u00b7 reading for %1$s</string>
+    <string name="following_device_on">Now following your location</string>
+    <string name="open_location_settings">Settings</string>
 </resources>

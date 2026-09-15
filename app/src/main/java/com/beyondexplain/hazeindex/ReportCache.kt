@@ -16,6 +16,32 @@ class ReportCache(context: Context) {
         get() = prefs.getString(KEY_CITY, null)
         set(value) = prefs.edit().putString(KEY_CITY, value).apply()
 
+    /** Whether the app should keep tracking the device's position across restarts. */
+    var followDevice: Boolean
+        get() = prefs.getBoolean(KEY_FOLLOW, false)
+        set(value) = prefs.edit().putBoolean(KEY_FOLLOW, value).apply()
+
+    /** The last resolved device position, so a restart shows a place name immediately. */
+    fun saveDeviceCity(city: City) {
+        val json = JSONObject()
+            .put("name", city.name)
+            .put("lat", city.latitude)
+            .put("lon", city.longitude)
+        prefs.edit().putString(KEY_DEVICE_CITY, json.toString()).apply()
+    }
+
+    fun loadDeviceCity(): City? {
+        val raw = prefs.getString(KEY_DEVICE_CITY, null) ?: return null
+        return runCatching {
+            val json = JSONObject(raw)
+            Cities.fromCoordinates(
+                name = json.getString("name"),
+                latitude = json.getDouble("lat"),
+                longitude = json.getDouble("lon")
+            )
+        }.getOrNull()
+    }
+
     fun save(report: HazeReport) {
         prefs.edit().putString(keyFor(report.city), encode(report).toString()).apply()
     }
@@ -88,6 +114,8 @@ class ReportCache(context: Context) {
 
     private companion object {
         const val KEY_CITY = "last_city"
+        const val KEY_FOLLOW = "follow_device"
+        const val KEY_DEVICE_CITY = "device_city"
     }
 }
 

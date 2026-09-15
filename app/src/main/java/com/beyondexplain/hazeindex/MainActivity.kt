@@ -1,13 +1,9 @@
 package com.beyondexplain.hazeindex
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.pm.PackageManager
-import android.location.Geocoder
-import android.location.Location
-import android.location.LocationManager
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -18,24 +14,25 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
-import androidx.lifecycle.lifecycleScope
 import com.beyondexplain.hazeindex.databinding.ActivityMainBinding
 import com.beyondexplain.hazeindex.databinding.ItemRegionBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.Locale
+import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: HazeViewModel by viewModels()
+    private val deviceLocation by lazy { DeviceLocation(this) }
+    private var followItem: MenuItem? = null
 
     private val requestLocation = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) useDeviceLocation() else toast(getString(R.string.location_permission_denied))
+        if (granted) startFollowing() else {
+            followItem?.isChecked = false
+            toast(getString(R.string.location_permission_denied))
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,15 +57,59 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) viewModel.refresh()
     }
 
+    override fun onStart() {
+        super.onStart()
+        // Position updates run only while the app is on screen.
+        viewModel.onForeground()
+    }
+
+    override fun onStop() {
+        viewModel.onBackground()
+        super.onStop()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)
+        followItem = menu.findItem(R.id.action_my_location)
+        followItem?.isChecked = viewModel.isFollowingDevice
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_pick_city -> { showCityPicker(); true }
-        R.id.action_my_location -> { requestLocation.launch(Manifest.permission.ACCESS_COARSE_LOCATION); true }
+        R.id.action_my_location -> { toggleFollowDevice(); true }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    // --------------------------------------------------------------- follow mode
+
+    private fun toggleFollowDevice() {
+        if (viewModel.isFollowingDevice) {
+            viewModel.stopFollowingDevice()
+            return
+        }
+        if (deviceLocation.hasPermission()) {
+            startFollowing()
+        } else {
+            requestLocation.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
+    }
+
+    private fun startFollowing() {
+        viewModel.followDeviceLocation()
+        if (!deviceLocation.isLocationEnabled()) {
+            promptForLocationServices()
+        } else {
+            toast(getString(R.string.following_device_on))
+        }
+    }
+
+    private fun promptForLocationServices() {
+        Snackbar.make(binding.root, R.string.location_services_off, Snackbar.LENGTH_LONG)
+            .setAction(R.string.open_location_settings) {
+                runCatching { startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+            }
+            .show()
     }
 
     // ------------------------------------------------------------------ render
@@ -76,10 +117,14 @@ class MainActivity : AppCompatActivity() {
     private fun render(state: UiState) {
         binding.swipeRefresh.isRefreshing = state.isRefreshing
         binding.cityName.text = state.city.displayName
+        followItem?.isChecked = state.followingDevice
 
         val report = state.report
         if (report == null) {
-            binding.observedAt.text = getString(R.string.pull_hint)
+            binding.observedAt.text = when {
+                state.isLocating -> getString(R.string.locating)
+                else -> getString(R.string.pull_hint)
+            }
             binding.indexValue.text = "--"
             binding.bandLabel.visibility = View.GONE
             binding.advice.text = ""
@@ -102,10 +147,13 @@ class MainActivity : AppCompatActivity() {
         tint(binding.bandLabel, bandColor)
 
         binding.advice.text = report.band.advice
-        binding.observedAt.text = getString(
-            R.string.observed_at,
-            Times.cityClock(report.observedAtEpochSeconds, report.utcOffsetSeconds)
-        )
+
+        val clock = Times.cityClock(report.observedAtEpochSeconds, report.utcOffsetSeconds)
+        binding.observedAt.text = when {
+            state.isLocating -> getString(R.string.locating)
+            state.followingDevice -> getString(R.string.following_device, clock)
+            else -> getString(R.string.observed_at, clock)
+        }
 
         binding.trendView.setData(report.trend, report.utcOffsetSeconds)
 
@@ -165,7 +213,7 @@ class MainActivity : AppCompatActivity() {
         if (view is TextView) view.setTextColor(ContextCompat.getColor(this, R.color.background))
     }
 
-    // ------------------------------------------------------------- location UI
+    // ------------------------------------------------------------- city picking
 
     private fun showCityPicker() {
         val names = Cities.ALL.map { it.displayName }.toTypedArray()
@@ -179,39 +227,6 @@ class MainActivity : AppCompatActivity() {
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
-
-    @SuppressLint("MissingPermission")
-    private fun useDeviceLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED
-        ) return
-
-        val manager = getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-        val fix = manager?.enabledProviders()?.mapNotNull { provider ->
-            runCatching { manager.getLastKnownLocation(provider) }.getOrNull()
-        }?.maxByOrNull { it.time }
-
-        if (fix == null) {
-            toast(getString(R.string.location_unavailable))
-            return
-        }
-
-        lifecycleScope.launch {
-            val name = withContext(Dispatchers.IO) { placeName(fix) }
-            viewModel.selectCity(Cities.fromCoordinates(name, fix.latitude, fix.longitude))
-        }
-    }
-
-    private fun LocationManager.enabledProviders(): List<String> =
-        getProviders(true).ifEmpty { listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER) }
-
-    @Suppress("DEPRECATION")
-    private fun placeName(location: Location): String = runCatching {
-        Geocoder(this, Locale.getDefault())
-            .getFromLocation(location.latitude, location.longitude, 1)
-            ?.firstOrNull()
-            ?.let { it.locality ?: it.subAdminArea ?: it.adminArea ?: it.countryName }
-    }.getOrNull() ?: getString(R.string.location_nearby)
 
     private fun toast(message: String) =
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
