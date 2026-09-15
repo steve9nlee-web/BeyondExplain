@@ -22,8 +22,4 @@ object FacebookLinks {
             .build()
 
     fun page(): Uri = Uri.parse(PAGE_URL)
-
-    /** A maps intent for walking directions to the stall. */
-    fun mapsUri(latitude: Double, longitude: Double, label: String): Uri =
-        Uri.parse("geo:$latitude,$longitude?q=${Uri.encode("$latitude,$longitude($label)")}")
 }

@@ -11,6 +11,8 @@ data class Stall(
     val notes: String = "",
     /** What to search for on the Penang Foodie page. Falls back to the stall name. */
     val facebookQuery: String = "",
+    /** True once the coordinate came back from Google rather than the catalogue. */
+    val verified: Boolean = false,
 ) {
     val searchTerm: String get() = facebookQuery.ifBlank { name }
 }

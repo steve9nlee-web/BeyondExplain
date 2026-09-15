@@ -61,6 +61,8 @@ class MainActivity : ComponentActivity() {
                     onRefresh = { viewModel.refresh(forceReload = true) },
                     onRadiusChange = viewModel::setRadius,
                     onFeedUrlChange = viewModel::setFeedUrl,
+                    onVerifyPositionsChange = viewModel::setVerifyPositions,
+                    onClearResolvedPositions = viewModel::clearResolvedPositions,
                 )
             }
         }

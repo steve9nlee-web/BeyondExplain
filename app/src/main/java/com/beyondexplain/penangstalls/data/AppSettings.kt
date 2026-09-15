@@ -15,10 +15,16 @@ class AppSettings(context: Context) {
         get() = prefs.getString(KEY_FEED_URL, "").orEmpty()
         set(value) = prefs.edit().putString(KEY_FEED_URL, value.trim()).apply()
 
+    /** Resolve stall names to Google's coordinates instead of trusting the feed. */
+    var verifyPositions: Boolean
+        get() = prefs.getBoolean(KEY_VERIFY, true)
+        set(value) = prefs.edit().putBoolean(KEY_VERIFY, value).apply()
+
     companion object {
         const val DEFAULT_RADIUS = 3000.0
         val RADIUS_CHOICES = listOf(200.0, 500.0, 1000.0, 3000.0, 10_000.0)
         private const val KEY_RADIUS = "radius_meters"
         private const val KEY_FEED_URL = "feed_url"
+        private const val KEY_VERIFY = "verify_positions"
     }
 }

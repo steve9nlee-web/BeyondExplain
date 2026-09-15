@@ -55,6 +55,22 @@ class StallRepository(private val context: Context) {
     }
 
     /**
+     * Swaps in any coordinate that was resolved from the stall's name, so the
+     * ranking uses Google's position rather than the catalogue's guess.
+     */
+    fun withResolvedCoordinates(catalog: StallCatalog, cache: CoordinateCache): StallCatalog =
+        catalog.copy(
+            stalls = catalog.stalls.map { stall ->
+                val resolved = cache[stall.id] ?: return@map stall
+                stall.copy(
+                    latitude = resolved.latitude,
+                    longitude = resolved.longitude,
+                    verified = true,
+                )
+            }
+        )
+
+    /**
      * Sorts every stall by great-circle distance from [origin] and keeps those
      * inside [radiusMeters].
      */

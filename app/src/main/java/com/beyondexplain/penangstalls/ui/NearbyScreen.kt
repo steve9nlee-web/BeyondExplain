@@ -7,6 +7,8 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -46,8 +49,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.beyondexplain.penangstalls.data.AppSettings
 import com.beyondexplain.penangstalls.data.DistanceBand
 import com.beyondexplain.penangstalls.data.FacebookLinks
+import com.beyondexplain.penangstalls.data.MapsLinks
 import com.beyondexplain.penangstalls.data.NearbyStall
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +64,8 @@ fun NearbyScreen(
     onRefresh: () -> Unit,
     onRadiusChange: (Double) -> Unit,
     onFeedUrlChange: (String) -> Unit,
+    onVerifyPositionsChange: (Boolean) -> Unit,
+    onClearResolvedPositions: () -> Unit,
 ) {
     var showSettings by remember { mutableStateOf(false) }
 
@@ -89,6 +96,8 @@ fun NearbyScreen(
             onDismiss = { showSettings = false },
             onRadiusChange = onRadiusChange,
             onFeedUrlChange = onFeedUrlChange,
+            onVerifyPositionsChange = onVerifyPositionsChange,
+            onClearResolvedPositions = onClearResolvedPositions,
         )
     }
 }
@@ -182,15 +191,8 @@ private fun ResultList(state: NearbyUiState, onRequestPrecise: () -> Unit) {
             items(stalls, key = { it.stall.id }) { nearby ->
                 StallCard(
                     nearby = nearby,
-                    onDirections = {
-                        context.openUri(
-                            FacebookLinks.mapsUri(
-                                nearby.stall.latitude,
-                                nearby.stall.longitude,
-                                nearby.stall.name,
-                            )
-                        )
-                    },
+                    onOpenInMaps = { context.openUri(MapsLinks.place(nearby.stall)) },
+                    onWalkThere = { context.openUri(MapsLinks.walkingDirections(nearby.stall)) },
                     onFacebook = { context.openUri(FacebookLinks.searchPageFor(nearby.stall.searchTerm)) },
                 )
             }
@@ -236,28 +238,32 @@ private fun Summary(state: NearbyUiState) {
                     )
                 }
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(6.dp))
             Text(
                 "Catalogue: ${state.catalogSize} stalls · source: ${state.sourceLabel}",
                 style = MaterialTheme.typography.bodySmall,
             )
-            if (state.usingBundledCatalogue) {
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    "Bundled stall coordinates are approximate — good to the right street, " +
-                        "not the right stall front. Set a feed URL in Settings for exact positions.",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
+            Spacer(Modifier.height(2.dp))
+            Text(
+                when {
+                    state.verifying ->
+                        "Looking up stall positions by name… ${state.verifiedCount} confirmed so far."
+                    !state.verifyPositions ->
+                        "Using catalogue coordinates as-is. Turn on position lookup in Settings " +
+                            "to rank by Google's positions instead."
+                    !state.geocoderAvailable ->
+                        "This device has no geocoder, so catalogue coordinates are used for " +
+                            "ranking. Tapping a stall still opens Google Maps by name."
+                    else ->
+                        "${state.verifiedCount} of ${state.catalogSize} positions confirmed by " +
+                            "name lookup; the rest use catalogue coordinates."
+                },
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }
 
-/**
- * Android 12 lets people grant "Approximate" location, which resolves to
- * roughly the city block at best and often a kilometre or more. The rings are
- * meaningless at that scale, so say so and offer the upgrade.
- */
 @Composable
 private fun PreciseLocationBanner(onRequestPrecise: () -> Unit) {
     Card(
@@ -267,8 +273,11 @@ private fun PreciseLocationBanner(onRequestPrecise: () -> Unit) {
         )
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text("Only approximate location is allowed", style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold)
+            Text(
+                "Only approximate location is allowed",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+            )
             Spacer(Modifier.height(4.dp))
             Text(
                 "Android is giving this app a rough position, which can be a kilometre or more " +
@@ -281,7 +290,6 @@ private fun PreciseLocationBanner(onRequestPrecise: () -> Unit) {
     }
 }
 
-/** The fix came back too loose to separate the near rings. */
 @Composable
 private fun CoarseFixBanner(state: NearbyUiState) {
     val accuracy = state.fix?.accuracyMeters?.toInt() ?: return
@@ -292,8 +300,11 @@ private fun CoarseFixBanner(state: NearbyUiState) {
         )
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text("Your position is only accurate to ±$accuracy m",
-                style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(
+                "Your position is only accurate to ±$accuracy m",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+            )
             Spacer(Modifier.height(4.dp))
             Text(
                 "That is wider than the 100 m and 200 m rings, so treat the nearest entries as " +
@@ -320,8 +331,14 @@ private fun BandHeader(band: DistanceBand, count: Int) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun StallCard(nearby: NearbyStall, onDirections: () -> Unit, onFacebook: () -> Unit) {
+private fun StallCard(
+    nearby: NearbyStall,
+    onOpenInMaps: () -> Unit,
+    onWalkThere: () -> Unit,
+    onFacebook: () -> Unit,
+) {
     Card(elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
         Column(Modifier.padding(16.dp)) {
             Row(
@@ -350,26 +367,42 @@ private fun StallCard(nearby: NearbyStall, onDirections: () -> Unit, onFacebook:
                 ).joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
             )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                if (nearby.stall.verified) {
+                    "Distance from Google's position for this place"
+                } else {
+                    "Distance from an approximate position — open in Maps for the exact spot"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = if (nearby.stall.verified) {
+                    MaterialTheme.colorScheme.tertiary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
             if (nearby.stall.notes.isNotBlank()) {
                 Spacer(Modifier.height(6.dp))
                 Text(nearby.stall.notes, style = MaterialTheme.typography.bodyMedium)
             }
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AssistChip(onClick = onDirections, label = { Text("Directions") })
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                AssistChip(onClick = onOpenInMaps, label = { Text("Find in Google Maps") })
+                AssistChip(onClick = onWalkThere, label = { Text("Walk there") })
                 AssistChip(onClick = onFacebook, label = { Text("On Penang Foodie") })
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SettingsDialog(
     state: NearbyUiState,
     onDismiss: () -> Unit,
     onRadiusChange: (Double) -> Unit,
     onFeedUrlChange: (String) -> Unit,
+    onVerifyPositionsChange: (Boolean) -> Unit,
+    onClearResolvedPositions: () -> Unit,
 ) {
     var url by remember { mutableStateOf(state.feedUrl) }
 
@@ -381,7 +414,7 @@ private fun SettingsDialog(
                 Text("Search radius", style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    com.beyondexplain.penangstalls.data.AppSettings.RADIUS_CHOICES.forEach { choice ->
+                    AppSettings.RADIUS_CHOICES.forEach { choice ->
                         FilterChip(
                             selected = state.radiusMeters == choice,
                             onClick = { onRadiusChange(choice) },
@@ -389,6 +422,25 @@ private fun SettingsDialog(
                         )
                     }
                 }
+
+                Spacer(Modifier.height(20.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("Look up positions by name", style = MaterialTheme.typography.titleSmall)
+                    Switch(checked = state.verifyPositions, onCheckedChange = onVerifyPositionsChange)
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Asks Google where each stall actually is, using its name, and ranks the " +
+                        "list by that instead of the catalogue's coordinates.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(Modifier.height(8.dp))
+                TextButton(onClick = onClearResolvedPositions) { Text("Re-check all positions") }
+
                 Spacer(Modifier.height(20.dp))
                 Text("Curated stall feed (optional)", style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.height(4.dp))

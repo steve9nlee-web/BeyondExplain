@@ -4,7 +4,7 @@ An Android app that, on open, detects where you are and lists Penang food stalls
 around you, grouped into distance rings: **within 100 m**, **100–200 m**, and
 onward through 200–500 m, 500 m–1 km, and beyond.
 
-Download: [`dist/penang-stalls-nearby-v1.1.apk`](dist/penang-stalls-nearby-v1.1.apk)
+Download: [`dist/penang-stalls-nearby-v1.2.apk`](dist/penang-stalls-nearby-v1.2.apk)
 
 ## What it does
 
@@ -16,9 +16,10 @@ Download: [`dist/penang-stalls-nearby-v1.1.apk`](dist/penang-stalls-nearby-v1.1.
    catalogue and drops anything outside your search radius (default 3 km,
    adjustable from 200 m to 10 km in Settings).
 3. Results are sorted nearest-first and grouped under the distance-ring headers.
-4. Each stall has two actions: **Directions** (hands the coordinates to your maps
-   app) and **On Penang Foodie** (opens that stall's search on the Penang Foodie
-   Facebook page). A button at the bottom opens the page itself.
+4. Each stall has three actions: **Find in Google Maps** and **Walk there**,
+   which open Maps by searching the stall's *name* rather than by dropping a
+   coordinate pin, and **On Penang Foodie**, which searches that stall on the
+   Penang Foodie Facebook page. A button at the bottom opens the page itself.
 
 ## Location accuracy
 
@@ -44,9 +45,27 @@ Two things commonly make the position look wrong, and the app now calls out both
 A settled outdoor GPS lock is typically ±5–10 m. Indoors, or in the shophouse
 streets of George Town, ±30–60 m is more realistic.
 
-Separately, **the bundled stall coordinates are approximate**, so even a perfect
-fix will not put you exactly at a stall front — see the next section. A feed URL
-with surveyed coordinates is the fix for that half of the problem.
+### Places are resolved by name, not by coordinate
+
+The other half of the problem is the stall positions themselves. The app handles
+that by leaning on Google's place data rather than its own coordinates:
+
+- **Tapping a stall searches Google Maps by name** — "Gurney Drive Hawker
+  Centre, Gurney Drive, Penang, Malaysia" — instead of opening a `geo:` pin at
+  the app's own coordinate. Maps resolves the name against its own record of the
+  place, so navigation goes to the real stall even when the catalogue's
+  coordinate is off.
+- **The ranking is corrected the same way.** After the list appears, the app
+  asks Android's built-in geocoder (Google-backed, no API key) where each stall
+  actually is, by name, and re-sorts using those positions. Results are bounded
+  to Penang and rejected if they land more than 2.5 km from the catalogue's
+  guess, so a same-named place elsewhere can't hijack an entry. Answers are
+  cached, so the lookup happens once per stall.
+
+Each card says which position it is using — Google's or the catalogue's — and the
+summary shows how many have been confirmed. You can turn the lookup off, or force
+a re-check, in Settings. On a device with no geocoder the list falls back to
+catalogue coordinates, but the Maps buttons still work by name.
 
 ## About the Penang Foodie source — read this
 
@@ -87,7 +106,7 @@ curated list.
 The APK is signed with the standard Android **debug key**, so it installs
 without a Play Store account but is not suitable for distribution:
 
-1. Copy `dist/penang-stalls-nearby-v1.1.apk` to your phone.
+1. Copy `dist/penang-stalls-nearby-v1.2.apk` to your phone.
 2. Enable "install unknown apps" for whichever app you are opening it from.
 3. Tap it to install, open **Penang Stalls**, and allow location access.
 
@@ -113,11 +132,15 @@ app/src/main/java/com/beyondexplain/penangstalls/
   data/Stall.kt                stall model + distance rings
   data/Fix.kt                  location fix + which fix beats which
   data/Geo.kt                  haversine distance
+  data/GeoPoint.kt             Penang bounds + when to trust a resolved position
+  data/MapsLinks.kt            Google Maps links built from the place name
+  data/CoordinateCache.kt      remembers resolved positions
   data/StallCatalog.kt         feed parser (skips bad rows, keeps the rest)
   data/StallRepository.kt      remote feed with bundled fallback, distance maths
   data/AppSettings.kt          radius + feed URL persistence
   data/FacebookLinks.kt        Penang Foodie and maps deep links
   location/LocationProvider.kt converges on the most accurate fix available
+  location/StallGeocoder.kt    resolves stall names to real coordinates
   ui/                          Compose screen, view model, theme
 app/src/main/assets/stalls.json  bundled catalogue
 ```
