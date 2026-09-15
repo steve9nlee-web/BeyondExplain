@@ -2,6 +2,7 @@ package com.beyondexplain.hazeindex
 
 import android.content.Context
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -19,6 +20,27 @@ object BandColors {
             Band.HAZARDOUS -> R.color.band_hazardous
         }
     )
+
+    /**
+     * The band colour stirred into the card surface. IQAir floods the whole headline
+     * with the band colour; on this dark theme a light wash reads the same way without
+     * turning the card into a torch.
+     */
+    fun surfaceTint(context: Context, band: Band): Int = ColorUtils.blendARGB(
+        ContextCompat.getColor(context, R.color.surface),
+        of(context, band),
+        0.16f
+    )
+
+    /** The face that goes with the band, IQAir style. Tinted with the band colour. */
+    fun face(band: Band): Int = when (band) {
+        Band.GOOD -> R.drawable.ic_face_good
+        Band.MODERATE -> R.drawable.ic_face_moderate
+        Band.SENSITIVE -> R.drawable.ic_face_sensitive
+        Band.UNHEALTHY -> R.drawable.ic_face_unhealthy
+        Band.VERY_UNHEALTHY -> R.drawable.ic_face_very_unhealthy
+        Band.HAZARDOUS -> R.drawable.ic_face_hazardous
+    }
 }
 
 object Times {
@@ -54,6 +76,12 @@ object Times {
 }
 
 object Numbers {
-    fun concentration(value: Double?): String =
-        if (value == null) "–" else String.format(Locale.getDefault(), "%.1f", value)
+    fun concentration(value: Double?): String = decimal(value, 1)
+
+    fun decimal(value: Double?, digits: Int = 1): String =
+        if (value == null) "\u2013" else String.format(Locale.getDefault(), "%.${digits}f", value)
+
+    /** Whole numbers where a decimal would be noise, e.g. 29°C and 12 km/h. */
+    fun rounded(value: Double?): String =
+        if (value == null) "\u2013" else String.format(Locale.getDefault(), "%.0f", value)
 }

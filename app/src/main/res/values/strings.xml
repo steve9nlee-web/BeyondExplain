@@ -11,6 +11,9 @@
     <string name="fetched_at">Fetched %1$s</string>
     <string name="cached_notice">Showing the last saved reading &#8212; swipe down to refresh</string>
 
+    <string name="section_scale">Index scale</string>
+    <string name="section_advice">Health recommendation</string>
+    <string name="section_weather">Weather now</string>
     <string name="section_trend">PM2.5, last 24 hours</string>
     <string name="section_pollutants">Pollutants right now</string>
     <string name="section_regions">PSI by region</string>
@@ -25,6 +28,21 @@
     <string name="label_co">CO</string>
     <string name="unit_ugm3">µg/m³</string>
     <string name="unit_mgm3">mg/m³</string>
+
+    <string name="label_main_pollutant">Main pollutant</string>
+    <string name="main_pollutant_value">%1$s &#183; %2$s %3$s</string>
+    <string name="main_pollutant_none">No pollutant breakdown for this location</string>
+
+    <string name="label_temperature">Temperature</string>
+    <string name="label_humidity">Humidity</string>
+    <string name="label_wind">Wind</string>
+    <string name="unit_celsius">%1$s&#176;C</string>
+    <string name="unit_percent">%1$d%%</string>
+    <string name="unit_kph">%1$s km/h</string>
+
+    <string name="cta_use_my_location">Use my location</string>
+    <string name="cta_pick_a_city">Pick a city</string>
+    <string name="no_reading">&#8211;</string>
 
     <string name="source_line">Source: %1$s</string>
     <string name="location_permission_denied">Location permission is off. Grant it, or pick a city instead.</string>

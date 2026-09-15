@@ -11,8 +11,8 @@ android {
         applicationId = "com.beyondexplain.hazeindex"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
     }
 
     buildTypes {
@@ -37,6 +37,11 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    testOptions {
+        // Robolectric inflates the real layouts, so the unit tests need real resources.
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 dependencies {
@@ -51,4 +56,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.13")
+    testImplementation("androidx.test:core:1.6.1")
 }

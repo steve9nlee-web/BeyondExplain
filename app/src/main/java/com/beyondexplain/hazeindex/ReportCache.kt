@@ -16,10 +16,23 @@ class ReportCache(context: Context) {
         get() = prefs.getString(KEY_CITY, null)
         set(value) = prefs.edit().putString(KEY_CITY, value).apply()
 
-    /** Whether the app should keep tracking the device's position across restarts. */
+    /**
+     * Whether the app should keep tracking the device's position across restarts.
+     * Defaults to true: the app is about the air where you are standing, so a fresh
+     * install opens on the device's own position rather than a city someone picked.
+     */
     var followDevice: Boolean
-        get() = prefs.getBoolean(KEY_FOLLOW, false)
+        get() = prefs.getBoolean(KEY_FOLLOW, true)
         set(value) = prefs.edit().putBoolean(KEY_FOLLOW, value).apply()
+
+    /**
+     * True once the app has put the system location prompt up by itself. Android stops
+     * showing that dialog after a couple of refusals, so asking on every launch would
+     * just be a silent no-op; after the first ask the in-app button takes over.
+     */
+    var hasAskedForLocation: Boolean
+        get() = prefs.getBoolean(KEY_ASKED, false)
+        set(value) = prefs.edit().putBoolean(KEY_ASKED, value).apply()
 
     /** The last resolved device position, so a restart shows a place name immediately. */
     fun saveDeviceCity(city: City) {
@@ -66,6 +79,14 @@ class ReportCache(context: Context) {
         put("no2", report.pollutants.nitrogenDioxide ?: JSONObject.NULL)
         put("so2", report.pollutants.sulphurDioxide ?: JSONObject.NULL)
         put("co", report.pollutants.coMilligrams ?: JSONObject.NULL)
+        put("main", report.mainPollutant?.name ?: JSONObject.NULL)
+        report.weather?.let { weather ->
+            put("weather", JSONObject()
+                .put("temp", weather.temperatureCelsius ?: JSONObject.NULL)
+                .put("humidity", weather.humidityPercent ?: JSONObject.NULL)
+                .put("wind", weather.windKph ?: JSONObject.NULL)
+                .put("code", weather.weatherCode ?: JSONObject.NULL))
+        }
         put("trend", JSONArray().apply {
             report.trend.forEach { point ->
                 put(JSONObject().put("t", point.epochSeconds).put("v", point.pm25))
@@ -108,6 +129,16 @@ class ReportCache(context: Context) {
             sourceLabel = json.optString("source"),
             trend = trend,
             regions = regions,
+            mainPollutant = json.optString("main").takeIf { it.isNotEmpty() }
+                ?.let { name -> Pollutant.entries.firstOrNull { it.name == name } },
+            weather = json.optJSONObject("weather")?.let { weather ->
+                Weather(
+                    temperatureCelsius = weather.optionalDouble("temp"),
+                    humidityPercent = weather.optionalDouble("humidity")?.toInt(),
+                    windKph = weather.optionalDouble("wind"),
+                    weatherCode = weather.optionalDouble("code")?.toInt()
+                ).takeIf { !it.isEmpty }
+            },
             fromCache = true
         )
     }
@@ -116,6 +147,7 @@ class ReportCache(context: Context) {
         const val KEY_CITY = "last_city"
         const val KEY_FOLLOW = "follow_device"
         const val KEY_DEVICE_CITY = "device_city"
+        const val KEY_ASKED = "asked_for_location"
     }
 }
 

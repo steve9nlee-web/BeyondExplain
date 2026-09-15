@@ -19,16 +19,24 @@ import java.util.Locale
  *    the US AQI headline and the 24 hour PM2.5 trend.
  *  - data.gov.sg / NEA for Singapore's official PSI, which is the number local news
  *    and advisories quote during a haze episode.
+ *  - Open-Meteo Forecast API for the temperature / humidity / wind strip that sits
+ *    under the index, the way IQAir pairs weather with air quality.
  */
 class HazeRepository {
 
     suspend fun load(city: City): HazeReport = withContext(Dispatchers.IO) {
-        val base = fetchOpenMeteo(city)
+        // The weather strip is decoration: a failure there must not cost the reading.
+        val weather = runCatching { fetchWeather(city) }.getOrNull()
+        val base = fetchOpenMeteo(city).copy(weather = weather)
         if (!city.useNeaPsi) return@withContext base
 
         // Singapore: prefer the official PSI as the headline, keeping Open-Meteo's
         // trend line. If NEA is unreachable we still have a usable report.
         val psi = runCatching { fetchNeaPsi() }.getOrNull() ?: return@withContext base
+        val pollutants = base.pollutants.copy(
+            pm25 = psi.pm25 ?: base.pollutants.pm25,
+            pm10 = psi.pm10 ?: base.pollutants.pm10
+        )
         base.copy(
             indexName = "PSI",
             indexValue = psi.national,
@@ -37,10 +45,9 @@ class HazeRepository {
             utcOffsetSeconds = SINGAPORE_UTC_OFFSET_SECONDS,
             sourceLabel = "NEA / data.gov.sg + Open-Meteo",
             regions = psi.regions,
-            pollutants = base.pollutants.copy(
-                pm25 = psi.pm25 ?: base.pollutants.pm25,
-                pm10 = psi.pm10 ?: base.pollutants.pm10
-            )
+            pollutants = pollutants,
+            // NEA's own PM figures replace Open-Meteo's, so the driver is recomputed.
+            mainPollutant = UsAqi.dominant(pollutants)?.first
         )
     }
 
@@ -91,7 +98,8 @@ class HazeRepository {
             utcOffsetSeconds = utcOffset,
             fetchedAtEpochMillis = System.currentTimeMillis(),
             sourceLabel = "Open-Meteo Air Quality",
-            trend = parseTrend(root.optJSONObject("hourly"), observedAt)
+            trend = parseTrend(root.optJSONObject("hourly"), observedAt),
+            mainPollutant = UsAqi.dominant(pollutants)?.first
         )
     }
 
@@ -129,6 +137,25 @@ class HazeRepository {
             points += HourPoint(t, v)
         }
         return points.takeLast(TREND_HOURS)
+    }
+
+    // ------------------------------------------------------------------ weather
+
+    private fun fetchWeather(city: City): Weather? {
+        val url = "https://api.open-meteo.com/v1/forecast" +
+            "?latitude=${city.latitude}&longitude=${city.longitude}" +
+            "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code" +
+            "&timezone=auto&timeformat=unixtime"
+
+        val root = JSONObject(httpGet(url))
+        val current = root.optJSONObject("current") ?: return null
+        val weather = Weather(
+            temperatureCelsius = current.optionalDouble("temperature_2m"),
+            humidityPercent = current.optionalDouble("relative_humidity_2m")?.toInt(),
+            windKph = current.optionalDouble("wind_speed_10m"),
+            weatherCode = current.optionalDouble("weather_code")?.toInt()
+        )
+        return weather.takeIf { !it.isEmpty }
     }
 
     // ----------------------------------------------------------------- NEA PSI
@@ -206,26 +233,6 @@ class HazeRepository {
         const val CONNECT_TIMEOUT_MS = 12_000
         const val READ_TIMEOUT_MS = 12_000
         val REGION_ORDER = listOf("north", "south", "east", "west", "central")
-    }
-}
-
-/** US EPA AQI from a PM2.5 concentration, using the 2024 breakpoints. */
-object UsAqi {
-    private val breakpoints = listOf(
-        doubleArrayOf(0.0, 9.0, 0.0, 50.0),
-        doubleArrayOf(9.1, 35.4, 51.0, 100.0),
-        doubleArrayOf(35.5, 55.4, 101.0, 150.0),
-        doubleArrayOf(55.5, 125.4, 151.0, 200.0),
-        doubleArrayOf(125.5, 225.4, 201.0, 300.0),
-        doubleArrayOf(225.5, 500.4, 301.0, 500.0)
-    )
-
-    fun fromPm25(concentration: Double): Int {
-        val c = concentration.coerceAtLeast(0.0)
-        val row = breakpoints.firstOrNull { c <= it[1] } ?: breakpoints.last()
-        val (cLow, cHigh, iLow, iHigh) = row
-        if (cHigh == cLow) return iLow.toInt()
-        return (((iHigh - iLow) / (cHigh - cLow)) * (c - cLow) + iLow).toInt().coerceIn(0, 500)
     }
 }
 

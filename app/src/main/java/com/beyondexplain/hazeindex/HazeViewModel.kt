@@ -54,9 +54,24 @@ class HazeViewModel(application: Application) : AndroidViewModel(application) {
 
     val isFollowingDevice: Boolean get() = _state.value?.followingDevice == true
 
+    /**
+     * True when the app should raise the system location prompt on its own. A fresh
+     * install starts in follow mode, so this is the first-launch path; after one ask
+     * the in-app button takes over and the app stops interrupting.
+     */
+    val shouldAskForLocation: Boolean
+        get() = isFollowingDevice && !cache.hasAskedForLocation && !deviceLocation.hasPermission()
+
+    fun markLocationAsked() {
+        cache.hasAskedForLocation = true
+    }
+
+    fun hasLocationPermission(): Boolean = deviceLocation.hasPermission()
+
+    fun isLocationEnabled(): Boolean = deviceLocation.isLocationEnabled()
+
     // ------------------------------------------------------------ mode switching
 
-    /** Pin the app to one city and stop tracking. */
     /** Leave follow mode and go back to the last city the user picked by hand. */
     fun stopFollowingDevice() {
         selectCity(Cities.byId(cache.lastCityId) ?: Cities.SINGAPORE)

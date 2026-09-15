@@ -41,7 +41,32 @@ enum class Band(val label: String, val advice: String) {
     );
 }
 
+/** One coloured step of the index ruler shown under the headline. */
+data class ScaleSegment(val band: Band, val lower: Int, val upper: Int)
+
 object IndexScale {
+
+    /** NEA PSI never lands on "unhealthy for sensitive groups", so it has five steps. */
+    val PSI_SEGMENTS = listOf(
+        ScaleSegment(Band.GOOD, 0, 50),
+        ScaleSegment(Band.MODERATE, 51, 100),
+        ScaleSegment(Band.UNHEALTHY, 101, 200),
+        ScaleSegment(Band.VERY_UNHEALTHY, 201, 300),
+        ScaleSegment(Band.HAZARDOUS, 301, 500)
+    )
+
+    val US_AQI_SEGMENTS = listOf(
+        ScaleSegment(Band.GOOD, 0, 50),
+        ScaleSegment(Band.MODERATE, 51, 100),
+        ScaleSegment(Band.SENSITIVE, 101, 150),
+        ScaleSegment(Band.UNHEALTHY, 151, 200),
+        ScaleSegment(Band.VERY_UNHEALTHY, 201, 300),
+        ScaleSegment(Band.HAZARDOUS, 301, 500)
+    )
+
+    fun segmentsFor(indexName: String): List<ScaleSegment> =
+        if (indexName == "PSI") PSI_SEGMENTS else US_AQI_SEGMENTS
+
     /** NEA Pollutant Standards Index bands. */
     fun forPsi(value: Int): Band = when {
         value <= 50 -> Band.GOOD
@@ -82,6 +107,43 @@ data class Pollutants(
     val coMilligrams: Double? = null
 )
 
+/**
+ * The weather strip IQAir shows alongside the index. Everything is optional: the
+ * forecast call is a nice-to-have and a haze reading is still useful without it.
+ */
+data class Weather(
+    val temperatureCelsius: Double? = null,
+    val humidityPercent: Int? = null,
+    val windKph: Double? = null,
+    /** WMO weather interpretation code, as served by Open-Meteo. */
+    val weatherCode: Int? = null
+) {
+    val isEmpty: Boolean
+        get() = temperatureCelsius == null && humidityPercent == null && windKph == null
+
+    /**
+     * Plain English for the WMO interpretation code. Grouped rather than exhaustive:
+     * "light drizzle" versus "dense drizzle" is more precision than a haze app needs.
+     */
+    val condition: String?
+        get() = when (weatherCode) {
+            null -> null
+            0 -> "Clear"
+            1 -> "Mainly clear"
+            2 -> "Partly cloudy"
+            3 -> "Overcast"
+            45, 48 -> "Fog"
+            in 51..57 -> "Drizzle"
+            in 61..67 -> "Rain"
+            in 71..77 -> "Snow"
+            in 80..82 -> "Rain showers"
+            85, 86 -> "Snow showers"
+            95 -> "Thunderstorm"
+            96, 99 -> "Thunderstorm with hail"
+            else -> null
+        }
+}
+
 /** One hour of the PM2.5 trend. */
 data class HourPoint(val epochSeconds: Long, val pm25: Double)
 
@@ -104,6 +166,9 @@ data class HazeReport(
     val sourceLabel: String,
     val trend: List<HourPoint> = emptyList(),
     val regions: List<RegionReading> = emptyList(),
+    /** The pollutant driving the index, IQAir style. Null when nothing was measured. */
+    val mainPollutant: Pollutant? = null,
+    val weather: Weather? = null,
     /** True when the data came from the on-device cache rather than a live fetch. */
     val fromCache: Boolean = false
 )

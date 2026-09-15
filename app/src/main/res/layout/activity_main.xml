@@ -41,23 +41,45 @@
                 android:paddingEnd="16dp"
                 android:paddingBottom="28dp">
 
-                <TextView
-                    android:id="@+id/cityName"
+                <!-- Where the reading is for. Location-first: this is the device's own
+                     position unless a city was picked by hand. -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
-                    android:textSize="26sp"
-                    android:textStyle="bold"
-                    android:text="Singapore" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/locationPin"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="6dp"
+                        android:contentDescription="@string/menu_use_my_location"
+                        android:src="@drawable/ic_my_location"
+                        app:tint="@color/accent" />
+
+                    <TextView
+                        android:id="@+id/cityName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/locating"
+                        android:textColor="@color/text_primary"
+                        android:textSize="26sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/observedAt"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="26dp"
                     android:layout_marginTop="2dp"
+                    android:text="@string/pull_hint"
                     android:textColor="@color/text_secondary"
-                    android:textSize="13sp"
-                    android:text="@string/pull_hint" />
+                    android:textSize="13sp" />
 
                 <TextView
                     android:id="@+id/statusBanner"
@@ -66,12 +88,25 @@
                     android:layout_marginTop="12dp"
                     android:background="@drawable/bg_region_row"
                     android:padding="12dp"
+                    android:text=""
                     android:textColor="@color/text_primary"
                     android:textSize="13sp"
-                    android:visibility="gone"
-                    android:text="" />
+                    android:visibility="gone" />
 
+                <!-- Shown whenever the app is not following the device, so getting back
+                     to "the air right here" is always one tap away. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/useMyLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/cta_use_my_location"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_my_location" />
+
+                <!-- headline index -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/heroCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
@@ -82,49 +117,93 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
 
-                        <TextView
-                            android:id="@+id/indexName"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            style="@style/SectionTitle"
-                            android:text="US AQI" />
-
-                        <TextView
-                            android:id="@+id/indexValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:textColor="@color/text_primary"
-                            android:textSize="68sp"
-                            android:textStyle="bold"
-                            android:text="--" />
-
-                        <TextView
-                            android:id="@+id/bandLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_chip"
-                            android:paddingStart="14dp"
-                            android:paddingEnd="14dp"
-                            android:paddingTop="6dp"
-                            android:paddingBottom="6dp"
-                            android:textColor="@color/background"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:text="" />
-
-                        <TextView
-                            android:id="@+id/advice"
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
-                            android:lineSpacingExtra="3dp"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp"
-                            android:text="" />
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/indexName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="US AQI"
+                                    style="@style/SectionTitle" />
+
+                                <TextView
+                                    android:id="@+id/indexValue"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="--"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="68sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/bandLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="@drawable/bg_chip"
+                                    android:paddingStart="14dp"
+                                    android:paddingEnd="14dp"
+                                    android:paddingTop="6dp"
+                                    android:paddingBottom="6dp"
+                                    android:text=""
+                                    android:textColor="@color/on_band"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:id="@+id/bandFace"
+                                android:layout_width="76dp"
+                                android:layout_height="76dp"
+                                android:layout_marginStart="8dp"
+                                android:contentDescription="@string/section_advice"
+                                android:src="@drawable/ic_face_good"
+                                android:visibility="invisible" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="16dp"
+                            android:background="@color/divider" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/label_main_pollutant"
+                                style="@style/MetricLabel" />
+
+                            <TextView
+                                android:id="@+id/mainPollutant"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="&#8211;"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- index ruler -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -139,8 +218,203 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            style="@style/SectionTitle"
-                            android:text="@string/section_trend" />
+                            android:text="@string/section_scale"
+                            style="@style/SectionTitle" />
+
+                        <com.beyondexplain.hazeindex.ScaleBarView
+                            android:id="@+id/scaleBar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- health guidance -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    style="@style/CardSurface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/section_advice"
+                            style="@style/SectionTitle" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/adviceIcon"
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_marginEnd="10dp"
+                                android:contentDescription="@string/section_advice"
+                                android:src="@drawable/ic_health" />
+
+                            <TextView
+                                android:id="@+id/advice"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:lineSpacingExtra="3dp"
+                                android:text=""
+                                android:textColor="@color/text_secondary"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- weather -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/weatherCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:visibility="gone"
+                    style="@style/CardSurface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/section_weather"
+                            style="@style/SectionTitle" />
+
+                        <TextView
+                            android:id="@+id/weatherCondition"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text=""
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:contentDescription="@string/label_temperature"
+                                    android:src="@drawable/ic_temperature" />
+
+                                <TextView
+                                    android:id="@+id/valueTemperature"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:text="&#8211;"
+                                    style="@style/MetricValue" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/label_temperature"
+                                    style="@style/MetricLabel" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:contentDescription="@string/label_humidity"
+                                    android:src="@drawable/ic_humidity" />
+
+                                <TextView
+                                    android:id="@+id/valueHumidity"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:text="&#8211;"
+                                    style="@style/MetricValue" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/label_humidity"
+                                    style="@style/MetricLabel" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:contentDescription="@string/label_wind"
+                                    android:src="@drawable/ic_wind" />
+
+                                <TextView
+                                    android:id="@+id/valueWind"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:text="&#8211;"
+                                    style="@style/MetricValue" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/label_wind"
+                                    style="@style/MetricLabel" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- trend -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    style="@style/CardSurface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/section_trend"
+                            style="@style/SectionTitle" />
 
                         <com.beyondexplain.hazeindex.TrendView
                             android:id="@+id/trendView"
@@ -150,6 +424,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- pollutants -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -164,192 +439,193 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            style="@style/SectionTitle"
-                            android:text="@string/section_pollutants" />
+                            android:text="@string/section_pollutants"
+                            style="@style/SectionTitle" />
 
                         <GridLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:columnCount="3">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_gravity="fill_horizontal"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical">
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_columnWeight="1"
+                                android:layout_gravity="fill_horizontal"
+                                android:layout_marginTop="12dp"
+                                android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_pm25"
-                    style="@style/MetricLabel" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/label_pm25"
+                                    style="@style/MetricLabel" />
 
-                <TextView
-                    android:id="@+id/valuePm25"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="–"
-                    style="@style/MetricValue" />
+                                <TextView
+                                    android:id="@+id/valuePm25"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="&#8211;"
+                                    style="@style/MetricValue" />
 
-                <TextView
-                    android:id="@+id/unitPm25"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/unit_ugm3"
-                    style="@style/MetricLabel" />
-            </LinearLayout>
+                                <TextView
+                                    android:id="@+id/unitPm25"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/unit_ugm3"
+                                    style="@style/MetricLabel" />
+                            </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_gravity="fill_horizontal"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical">
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_columnWeight="1"
+                                android:layout_gravity="fill_horizontal"
+                                android:layout_marginTop="12dp"
+                                android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_pm10"
-                    style="@style/MetricLabel" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/label_pm10"
+                                    style="@style/MetricLabel" />
 
-                <TextView
-                    android:id="@+id/valuePm10"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="–"
-                    style="@style/MetricValue" />
+                                <TextView
+                                    android:id="@+id/valuePm10"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="&#8211;"
+                                    style="@style/MetricValue" />
 
-                <TextView
-                    android:id="@+id/unitPm10"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/unit_ugm3"
-                    style="@style/MetricLabel" />
-            </LinearLayout>
+                                <TextView
+                                    android:id="@+id/unitPm10"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/unit_ugm3"
+                                    style="@style/MetricLabel" />
+                            </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_gravity="fill_horizontal"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical">
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_columnWeight="1"
+                                android:layout_gravity="fill_horizontal"
+                                android:layout_marginTop="12dp"
+                                android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_o3"
-                    style="@style/MetricLabel" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/label_o3"
+                                    style="@style/MetricLabel" />
 
-                <TextView
-                    android:id="@+id/valueO3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="–"
-                    style="@style/MetricValue" />
+                                <TextView
+                                    android:id="@+id/valueO3"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="&#8211;"
+                                    style="@style/MetricValue" />
 
-                <TextView
-                    android:id="@+id/unitO3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/unit_ugm3"
-                    style="@style/MetricLabel" />
-            </LinearLayout>
+                                <TextView
+                                    android:id="@+id/unitO3"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/unit_ugm3"
+                                    style="@style/MetricLabel" />
+                            </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_gravity="fill_horizontal"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical">
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_columnWeight="1"
+                                android:layout_gravity="fill_horizontal"
+                                android:layout_marginTop="12dp"
+                                android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_no2"
-                    style="@style/MetricLabel" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/label_no2"
+                                    style="@style/MetricLabel" />
 
-                <TextView
-                    android:id="@+id/valueNo2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="–"
-                    style="@style/MetricValue" />
+                                <TextView
+                                    android:id="@+id/valueNo2"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="&#8211;"
+                                    style="@style/MetricValue" />
 
-                <TextView
-                    android:id="@+id/unitNo2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/unit_ugm3"
-                    style="@style/MetricLabel" />
-            </LinearLayout>
+                                <TextView
+                                    android:id="@+id/unitNo2"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/unit_ugm3"
+                                    style="@style/MetricLabel" />
+                            </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_gravity="fill_horizontal"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical">
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_columnWeight="1"
+                                android:layout_gravity="fill_horizontal"
+                                android:layout_marginTop="12dp"
+                                android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_so2"
-                    style="@style/MetricLabel" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/label_so2"
+                                    style="@style/MetricLabel" />
 
-                <TextView
-                    android:id="@+id/valueSo2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="–"
-                    style="@style/MetricValue" />
+                                <TextView
+                                    android:id="@+id/valueSo2"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="&#8211;"
+                                    style="@style/MetricValue" />
 
-                <TextView
-                    android:id="@+id/unitSo2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/unit_ugm3"
-                    style="@style/MetricLabel" />
-            </LinearLayout>
+                                <TextView
+                                    android:id="@+id/unitSo2"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/unit_ugm3"
+                                    style="@style/MetricLabel" />
+                            </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_gravity="fill_horizontal"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical">
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_columnWeight="1"
+                                android:layout_gravity="fill_horizontal"
+                                android:layout_marginTop="12dp"
+                                android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_co"
-                    style="@style/MetricLabel" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/label_co"
+                                    style="@style/MetricLabel" />
 
-                <TextView
-                    android:id="@+id/valueCo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="–"
-                    style="@style/MetricValue" />
+                                <TextView
+                                    android:id="@+id/valueCo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="&#8211;"
+                                    style="@style/MetricValue" />
 
-                <TextView
-                    android:id="@+id/unitCo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/unit_ugm3"
-                    style="@style/MetricLabel" />
-            </LinearLayout>
+                                <TextView
+                                    android:id="@+id/unitCo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/unit_mgm3"
+                                    style="@style/MetricLabel" />
+                            </LinearLayout>
 
                         </GridLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- PSI by region -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/regionsCard"
                     android:layout_width="match_parent"
@@ -366,8 +642,8 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            style="@style/SectionTitle"
-                            android:text="@string/section_regions" />
+                            android:text="@string/section_regions"
+                            style="@style/SectionTitle" />
 
                         <LinearLayout
                             android:id="@+id/regionsContainer"
@@ -383,18 +659,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:text=""
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:text="" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/fetchedAt"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
+                    android:text=""
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:text="" />
+                    android:textSize="12sp" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

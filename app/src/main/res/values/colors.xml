@@ -14,4 +14,7 @@
     <color name="band_unhealthy">#FFEB5757</color>
     <color name="band_very_unhealthy">#FFA55EEA</color>
     <color name="band_hazardous">#FFC1435A</color>
+
+    <!-- Text that sits on top of a solid band colour. -->
+    <color name="on_band">#FF0B0F14</color>
 </resources>
