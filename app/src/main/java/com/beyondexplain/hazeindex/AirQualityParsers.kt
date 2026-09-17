@@ -17,7 +17,9 @@ data class PsiSnapshot(
     val regions: List<RegionReading>,
     val pm25: Double?,
     val pm10: Double?,
-    val observedAtEpochSeconds: Long
+    val observedAtEpochSeconds: Long,
+    /** The same regions positioned on the map, when the feed carries label locations. */
+    val regionPoints: List<AreaReading> = emptyList()
 )
 
 /**
@@ -254,14 +256,47 @@ object NeaPsiParser {
             .ifEmpty { latest.optString("updatedTimestamp") }
             .ifEmpty { latest.optString("update_timestamp") }
 
+        val observedAt = parseIso8601Seconds(timestamp) ?: (System.currentTimeMillis() / 1000)
         return PsiSnapshot(
             national = national,
             regions = regions,
+            regionPoints = regionPoints(container, psi, observedAt),
             pm25 = readings.optJSONObject("pm25_twenty_four_hourly")?.optionalDouble("national"),
             pm10 = readings.optJSONObject("pm10_twenty_four_hourly")?.optionalDouble("national"),
-            observedAtEpochSeconds = parseIso8601Seconds(timestamp)
-                ?: (System.currentTimeMillis() / 1000)
+            observedAtEpochSeconds = observedAt
         )
+    }
+
+    /** v2 nests the coordinates under regionMetadata, v1 under region_metadata. */
+    private fun regionPoints(
+        container: JSONObject,
+        psi: JSONObject,
+        observedAt: Long
+    ): List<AreaReading> {
+        val metadata = container.optJSONArray("regionMetadata")
+            ?: container.optJSONArray("region_metadata")
+            ?: return emptyList()
+
+        return (0 until metadata.length()).mapNotNull { index ->
+            val entry = metadata.optJSONObject(index) ?: return@mapNotNull null
+            val name = entry.optString("name").takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val location = entry.optJSONObject("labelLocation")
+                ?: entry.optJSONObject("label_location")
+                ?: return@mapNotNull null
+            val latitude = location.optionalDouble("latitude") ?: return@mapNotNull null
+            val longitude = location.optionalDouble("longitude") ?: return@mapNotNull null
+            val value = psi.optionalDouble(name)?.toInt() ?: return@mapNotNull null
+
+            AreaReading(
+                name = name.replaceFirstChar(Char::uppercase) + " Singapore",
+                latitude = latitude,
+                longitude = longitude,
+                indexValue = value,
+                indexName = "PSI",
+                measured = true,
+                observedAtEpochSeconds = observedAt
+            )
+        }
     }
 
     private val REGION_ORDER = listOf("north", "south", "east", "west", "central")
@@ -304,4 +339,82 @@ internal fun parseIso8601OffsetSeconds(raw: String?): Int? {
     val match = Regex("([+-])(\\d{2}):?(\\d{2})$").find(raw.trim()) ?: return null
     val sign = if (match.groupValues[1] == "-") -1 else 1
     return sign * (match.groupValues[2].toInt() * 3600 + match.groupValues[3].toInt() * 60)
+}
+
+
+/**
+ * aqicn.org station map endpoint: every station inside a bounding box. This is what
+ * turns the map from one number into a picture of where the haze actually is.
+ */
+object WaqiBoundsParser {
+
+    fun parse(body: String): List<AreaReading> {
+        val root = JSONObject(body)
+        if (root.optString("status") != "ok") {
+            throw IOException(
+                root.optString("data").ifBlank { "aqicn.org rejected the request" }
+                    .let { if (it == "Invalid key") "aqicn.org token is not valid" else it }
+            )
+        }
+
+        val stations = root.optJSONArray("data") ?: return emptyList()
+        return (0 until stations.length()).mapNotNull { index ->
+            val station = stations.optJSONObject(index) ?: return@mapNotNull null
+            // `aqi` arrives as a string, and is "-" for a station that is not reporting.
+            val value = station.optString("aqi").toIntOrNull() ?: return@mapNotNull null
+            val latitude = station.optionalDouble("lat") ?: return@mapNotNull null
+            val longitude = station.optionalDouble("lon") ?: return@mapNotNull null
+            val name = station.optJSONObject("station")?.optString("name")?.takeIf { it.isNotBlank() }
+
+            AreaReading(
+                name = name ?: "Station ${station.optInt("uid")}",
+                latitude = latitude,
+                longitude = longitude,
+                indexValue = value,
+                indexName = "AQI",
+                measured = true,
+                observedAtEpochSeconds = parseIso8601Seconds(
+                    station.optJSONObject("station")?.optString("time")
+                )
+            )
+        }
+    }
+}
+
+/**
+ * Open-Meteo answers a comma-separated list of coordinates in one request, which gives
+ * a keyless modelled grid to shade the map with when no station feed is configured.
+ */
+object OpenMeteoGridParser {
+
+    fun parse(body: String): List<AreaReading> {
+        val trimmed = body.trimStart()
+        // A single coordinate comes back as an object, several as an array.
+        val entries = if (trimmed.startsWith("[")) {
+            JSONArray(body)
+        } else {
+            JSONArray().put(JSONObject(body))
+        }
+
+        return (0 until entries.length()).mapNotNull { index ->
+            val entry = entries.optJSONObject(index) ?: return@mapNotNull null
+            if (entry.optBoolean("error")) return@mapNotNull null
+            val current = entry.optJSONObject("current") ?: return@mapNotNull null
+            val latitude = entry.optionalDouble("latitude") ?: return@mapNotNull null
+            val longitude = entry.optionalDouble("longitude") ?: return@mapNotNull null
+            val value = current.optionalDouble("us_aqi")?.toInt()
+                ?: current.optionalDouble("pm2_5")?.let { UsAqi.fromPm25(it) }
+                ?: return@mapNotNull null
+
+            AreaReading(
+                name = "Model grid",
+                latitude = latitude,
+                longitude = longitude,
+                indexValue = value,
+                indexName = "US AQI",
+                measured = false,
+                observedAtEpochSeconds = current.optLong("time").takeIf { it > 0 }
+            )
+        }
+    }
 }

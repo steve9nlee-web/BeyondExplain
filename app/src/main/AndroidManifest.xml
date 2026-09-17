@@ -3,8 +3,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Optional: only used if the user taps "Use my location". -->
+    <!-- Optional: only used if the user taps "Follow my location". -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Location is a convenience, never a requirement: do not exclude any device. -->
+    <uses-feature android:name="android.hardware.location" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -22,5 +24,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MapActivity"
+            android:exported="false"
+            android:label="@string/map_title"
+            android:parentActivityName=".MainActivity" />
     </application>
 </manifest>

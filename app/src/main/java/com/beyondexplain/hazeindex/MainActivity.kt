@@ -77,6 +77,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.action_map -> { startActivity(MapActivity.intent(this, viewModel.currentCity)); true }
         R.id.action_pick_city -> { showCityPicker(); true }
         R.id.action_my_location -> { toggleFollowDevice(); true }
         R.id.action_sources -> { showSourceSettings(); true }

@@ -10,8 +10,8 @@ Pre-built APKs are in [`dist/`](dist/):
 
 | File | Notes |
 | --- | --- |
-| `dist/HazeIndex-1.2.apk` | Release build, ~4.7 MB — install this one |
-| `dist/HazeIndex-1.2-debug.apk` | Debug build, same app with debug symbols |
+| `dist/HazeIndex-1.3.apk` | Release build, ~5.2 MB — install this one |
+| `dist/HazeIndex-1.3-debug.apk` | Debug build, same app with debug symbols |
 
 Install on the phone: copy the APK across (or download it from GitHub on the device), open it,
 and allow "install from unknown sources" when Android asks. Android 7.0 (API 24) or newer.
@@ -31,6 +31,29 @@ steps. That key is fine for sideloading and testing; swap in a real keystore in
 - **Current pollutants** — PM2.5, PM10, ozone, NO₂, SO₂ and CO.
 - **PSI by region** for Singapore (north / south / east / west / central).
 - **Last saved reading** when the phone is offline, clearly labelled as cached.
+
+### Haze map
+
+The map icon in the toolbar opens the readings as a picture rather than a single number.
+
+- **The chosen location is pinned in a card across the top** — its index, band and whether
+  that number was measured or modelled — and marked on the map with a highlighted pin, so it
+  never gets lost among the others.
+- **Pan or zoom and the area reloads.** Whatever is in view is fetched for that viewport
+  (debounced, so a drag costs one request, not one per frame).
+- **With an aqicn.org token**: every real monitoring station in view, each a pin showing its
+  own index, coloured by band.
+- **Without one**: a 5×5 lattice is sampled across the viewport in a *single* Open-Meteo
+  request and drawn as translucent cells — a modelled heat map of where the haze is sitting.
+- **Singapore's five official PSI regions** are layered on whenever they are in view, keyless,
+  and they always render as pins because they are measured.
+- Tap any pin or cell for its name, index, band, whether it was measured or modelled, and when.
+- A colour legend runs along the bottom, with buttons to recentre on the chosen location and
+  to refresh.
+
+Tiles come from OpenStreetMap through [osmdroid](https://github.com/osmdroid/osmdroid) — no
+API key, no Play Services, and the tile cache lives in the app's own cache directory. Tiles are
+colour-inverted to match the dark UI.
 
 ### Local reading that follows the device
 
@@ -124,7 +147,10 @@ JDK 17 or newer, Gradle wrapper included (8.11.1), AGP 8.7.3, Kotlin 2.0.21.
 | `ReportCache.kt` | Last reading persisted to `SharedPreferences` |
 | `TrendView.kt` | Hand-drawn 24-hour PM2.5 bar chart (no charting dependency) |
 | `Model.kt` | Report model plus the PSI / US AQI / PM2.5 band thresholds |
-| `Cities.kt` | Location catalogue, the device "city", and the distance maths |
+| `Cities.kt` | Location catalogue, the device "city", distance maths and `MapBounds` |
+| `MapActivity.kt` | The map screen: overlays, viewport reloads, pin taps |
+| `MapViewModel.kt` | Map state: the chosen location's reading plus the area readings |
+| `MarkerIcons.kt` | Map pins drawn at runtime, coloured by band |
 
 ## Known limitation
 
@@ -133,10 +159,11 @@ ever fetched during development**. To cover that, each parser is a pure function
 response body and every one is unit tested against a captured response shape — success and
 failure, including a bad aqicn.org token, an IQAir `incorrect_api_key`, the NEA v1 and v2
 shapes, and Open-Meteo with and without its `current` block. `./gradlew :app:testDebugUnitTest`
-runs 22 of these. That is a good deal stronger than "written from the docs", but it is still
+runs 33 of these, the map's station-bounds and modelled-grid feeds included. That is a good deal stronger than "written from the docs", but it is still
 not the same as a real response: if a field moves, `AirQualityParsers.kt` is the one place to
 adjust, and each parser fails with a message the UI shows rather than crashing.
 
-Likewise there is no GPS or geocoder on that machine, so the follow-the-device path is unit
-tested (distance maths, the Singapore bounding box, the stable device-city id) but has never
-met a real position fix.
+Likewise there is no GPS, geocoder or display on that machine, so the follow-the-device path
+and the map are unit tested where they can be (distance maths, the Singapore bounding box, the
+stable device-city id, the viewport lattice and cell sizing) but neither has met a real position
+fix or drawn a real tile.

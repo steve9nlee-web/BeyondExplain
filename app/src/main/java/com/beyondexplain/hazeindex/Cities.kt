@@ -77,3 +77,41 @@ object Geo {
         return 2 * EARTH_RADIUS_METRES * kotlin.math.asin(kotlin.math.sqrt(a).coerceIn(0.0, 1.0))
     }
 }
+
+/** The visible map rectangle, and the sampling maths that shades it. */
+data class MapBounds(
+    val south: Double,
+    val west: Double,
+    val north: Double,
+    val east: Double
+) {
+    /** A lattice of sample points, at most [GRID] per side, inset half a cell from the edges. */
+    fun samplePoints(): List<Pair<Double, Double>> {
+        if (north <= south || east <= west) return emptyList()
+        val latStep = (north - south) / GRID
+        val lonStep = (east - west) / GRID
+        return (0 until GRID).flatMap { row ->
+            (0 until GRID).map { column ->
+                (south + latStep * (row + 0.5)) to (west + lonStep * (column + 0.5))
+            }
+        }
+    }
+
+    /** Half a cell, so the drawn circles tile the viewport without swamping it. */
+    fun cellRadiusMetres(): Double {
+        val latStep = (north - south) / GRID
+        return Geo.distanceMetres(south, west, south + latStep, west) / 2
+    }
+
+    fun intersectsSingapore(): Boolean =
+        south <= SINGAPORE_NORTH && north >= SINGAPORE_SOUTH &&
+            west <= SINGAPORE_EAST && east >= SINGAPORE_WEST
+
+    private companion object {
+        const val GRID = 5
+        const val SINGAPORE_SOUTH = 1.13
+        const val SINGAPORE_NORTH = 1.49
+        const val SINGAPORE_WEST = 103.58
+        const val SINGAPORE_EAST = 104.13
+    }
+}

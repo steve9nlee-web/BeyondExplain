@@ -128,3 +128,26 @@ data class HazeReport(
     /** Non-fatal thing the user should know, e.g. a configured source that fell back. */
     val notice: String? = null
 )
+
+/** One point on the map: a station, a model grid cell, or an official reporting region. */
+data class AreaReading(
+    val name: String,
+    val latitude: Double,
+    val longitude: Double,
+    val indexValue: Int,
+    val indexName: String,
+    val measured: Boolean,
+    val observedAtEpochSeconds: Long? = null
+) {
+    val band: Band
+        get() = if (indexName == "PSI") IndexScale.forPsi(indexValue) else IndexScale.forUsAqi(indexValue)
+}
+
+/** Everything plotted for one view of the map. */
+data class AreaSnapshot(
+    val readings: List<AreaReading> = emptyList(),
+    val measured: Boolean = false,
+    val sourceLabel: String = "",
+    /** Set for the modelled grid, so each sample can be drawn as a cell rather than a pin. */
+    val cellRadiusMetres: Double? = null
+)

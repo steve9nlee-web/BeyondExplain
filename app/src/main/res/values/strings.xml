@@ -37,6 +37,19 @@
     <string name="unit_aqi">AQI</string>
     <string name="section_pollutants_aqi">Pollutant sub-indices</string>
 
+    <string name="menu_map">Haze map</string>
+    <string name="map_title">Haze map</string>
+    <string name="map_recentre">Back to the chosen location</string>
+    <string name="map_refresh">Refresh the map</string>
+    <string name="map_tap_hint">Pan the map to load readings for that area &#183; tap a pin for details</string>
+    <string name="map_source">Showing: %1$s</string>
+    <string name="map_no_readings">No readings for this area yet &#8212; try zooming out</string>
+    <string name="map_selection_detail">%1$s &#183; %2$s</string>
+    <string name="map_measured">measured at a station</string>
+    <string name="map_modelled">modelled grid cell</string>
+    <string name="map_chosen">Chosen location</string>
+    <string name="map_attribution">Map &#169; OpenStreetMap contributors</string>
+
     <string name="menu_sources">Data source</string>
     <string name="sources_explainer">Station feeds report real monitoring equipment near you and track haze far better than the keyless model fallback. Both keys are free.</string>
     <string name="hint_waqi">aqicn.org token</string>

@@ -57,6 +57,47 @@ class HazeRepository(private val settings: Settings) {
         applyNeaPsi(combined, psi)
     }
 
+    /**
+     * Readings across a map viewport. Stations when a token allows it, otherwise a
+     * modelled grid, with Singapore's official regions layered on whenever they are
+     * in view — those need no key and are the most trustworthy points on the map.
+     */
+    suspend fun loadArea(bounds: MapBounds): AreaSnapshot = withContext(Dispatchers.IO) {
+        val stations = when (settings.source) {
+            SourceChoice.OPEN_METEO -> null
+            // IQAir has no free bounding-box endpoint, so those users get the grid.
+            SourceChoice.IQAIR -> null
+            SourceChoice.WAQI, SourceChoice.AUTO ->
+                settings.waqiToken?.let { runCatching { fetchWaqiBounds(bounds) }.getOrNull() }
+        }?.takeIf { it.isNotEmpty() }
+
+        val regions = if (bounds.intersectsSingapore()) {
+            runCatching { fetchNeaPsi().regionPoints }.getOrNull().orEmpty()
+        } else {
+            emptyList()
+        }
+
+        if (stations != null) {
+            return@withContext AreaSnapshot(
+                readings = regions + stations,
+                measured = true,
+                sourceLabel = "aqicn.org stations" + if (regions.isNotEmpty()) " + NEA regions" else ""
+            )
+        }
+
+        val grid = runCatching { fetchOpenMeteoGrid(bounds) }.getOrNull().orEmpty()
+        AreaSnapshot(
+            readings = regions + grid,
+            measured = regions.isNotEmpty() && grid.isEmpty(),
+            sourceLabel = when {
+                grid.isEmpty() && regions.isNotEmpty() -> "NEA regions"
+                regions.isNotEmpty() -> "Open-Meteo model grid + NEA regions"
+                else -> "Open-Meteo model grid"
+            },
+            cellRadiusMetres = grid.takeIf { it.isNotEmpty() }?.let { bounds.cellRadiusMetres() }
+        )
+    }
+
     // ------------------------------------------------------------------- fetching
 
     private fun fetchWaqi(city: City): HazeReport {
@@ -75,6 +116,27 @@ class HazeRepository(private val settings: Settings) {
             "&key=${URLEncoder.encode(key, "UTF-8")}"
         return IqAirParser.parse(httpGet(url), city)
     }
+
+    private fun fetchWaqiBounds(bounds: MapBounds): List<AreaReading> {
+        val token = settings.waqiToken ?: throw IOException("No aqicn.org token configured")
+        val url = "https://api.waqi.info/map/bounds/" +
+            "?latlng=${bounds.south},${bounds.west},${bounds.north},${bounds.east}" +
+            "&token=${URLEncoder.encode(token, "UTF-8")}"
+        return WaqiBoundsParser.parse(httpGet(url))
+    }
+
+    private fun fetchOpenMeteoGrid(bounds: MapBounds): List<AreaReading> {
+        val points = bounds.samplePoints()
+        if (points.isEmpty()) return emptyList()
+        val url = "https://air-quality-api.open-meteo.com/v1/air-quality" +
+            "?latitude=${points.joinToString(",") { trim(it.first) }}" +
+            "&longitude=${points.joinToString(",") { trim(it.second) }}" +
+            "&current=us_aqi,pm2_5&timeformat=unixtime"
+        return OpenMeteoGridParser.parse(httpGet(url))
+    }
+
+    /** Keeps the multi-point URL short enough to stay well inside any limit. */
+    private fun trim(value: Double): String = String.format(java.util.Locale.US, "%.4f", value)
 
     private fun fetchOpenMeteo(city: City): HazeReport {
         val url = "https://air-quality-api.open-meteo.com/v1/air-quality" +
