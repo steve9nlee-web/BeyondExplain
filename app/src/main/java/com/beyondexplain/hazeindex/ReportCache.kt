@@ -60,6 +60,11 @@ class ReportCache(context: Context) {
         put("utcOffset", report.utcOffsetSeconds)
         put("fetchedAt", report.fetchedAtEpochMillis)
         put("source", report.sourceLabel)
+        put("measured", report.measured)
+        put("station", report.stationName ?: JSONObject.NULL)
+        put("stationDistance", report.stationDistanceMetres ?: JSONObject.NULL)
+        put("dominant", report.dominantPollutant ?: JSONObject.NULL)
+        put("unit", report.pollutantUnit.name)
         put("pm25", report.pollutants.pm25 ?: JSONObject.NULL)
         put("pm10", report.pollutants.pm10 ?: JSONObject.NULL)
         put("o3", report.pollutants.ozone ?: JSONObject.NULL)
@@ -108,7 +113,13 @@ class ReportCache(context: Context) {
             sourceLabel = json.optString("source"),
             trend = trend,
             regions = regions,
-            fromCache = true
+            fromCache = true,
+            measured = json.optBoolean("measured", false),
+            stationName = json.optString("station").takeIf { it.isNotBlank() },
+            stationDistanceMetres = json.optionalDouble("stationDistance"),
+            dominantPollutant = json.optString("dominant").takeIf { it.isNotBlank() },
+            pollutantUnit = runCatching { PollutantUnit.valueOf(json.optString("unit")) }
+                .getOrDefault(PollutantUnit.MICROGRAMS)
         )
     }
 

@@ -25,7 +25,8 @@ data class UiState(
 
 class HazeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = HazeRepository()
+    private val settings = Settings(application)
+    private val repository = HazeRepository(settings)
     private val cache = ReportCache(application)
     private val deviceLocation = DeviceLocation(application)
 
@@ -53,6 +54,12 @@ class HazeViewModel(application: Application) : AndroidViewModel(application) {
     val currentCity: City get() = _state.value?.city ?: Cities.SINGAPORE
 
     val isFollowingDevice: Boolean get() = _state.value?.followingDevice == true
+
+    /** Exposed so the settings dialog can read and write the keys. */
+    fun settings(): Settings = settings
+
+    /** Called after the settings dialog changes a key or the preferred source. */
+    fun onSourceSettingsChanged() = refresh()
 
     // ------------------------------------------------------------ mode switching
 

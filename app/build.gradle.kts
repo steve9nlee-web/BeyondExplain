@@ -11,8 +11,8 @@ android {
         applicationId = "com.beyondexplain.hazeindex"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
     }
 
     buildTypes {
@@ -51,4 +51,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     testImplementation("junit:junit:4.13.2")
+    // Gives the JVM tests a real org.json so every feed parser can be exercised offline.
+    testImplementation("org.json:json:20250107")
 }

@@ -72,7 +72,14 @@ object IndexScale {
     }
 }
 
-/** Current pollutant concentrations, all in µg/m³ except [coMilligrams]. */
+/**
+ * What the pollutant tiles are showing. Ground stations published through WAQI report
+ * per-pollutant AQI sub-indices rather than raw concentrations, so the UI has to say
+ * which one it is instead of stamping µg/m³ on everything.
+ */
+enum class PollutantUnit { MICROGRAMS, AQI }
+
+/** Current pollutant readings — concentrations, or sub-indices when [PollutantUnit.AQI]. */
 data class Pollutants(
     val pm25: Double? = null,
     val pm10: Double? = null,
@@ -105,5 +112,19 @@ data class HazeReport(
     val trend: List<HourPoint> = emptyList(),
     val regions: List<RegionReading> = emptyList(),
     /** True when the data came from the on-device cache rather than a live fetch. */
-    val fromCache: Boolean = false
+    val fromCache: Boolean = false,
+    /**
+     * True when the headline came off real monitoring equipment rather than a
+     * weather model. This is the difference between "measured" and "simulated".
+     */
+    val measured: Boolean = false,
+    /** Name of the reporting station, when the source names one. */
+    val stationName: String? = null,
+    /** How far that station is from the location being asked about. */
+    val stationDistanceMetres: Double? = null,
+    /** The pollutant driving the index, e.g. "pm25". */
+    val dominantPollutant: String? = null,
+    val pollutantUnit: PollutantUnit = PollutantUnit.MICROGRAMS,
+    /** Non-fatal thing the user should know, e.g. a configured source that fell back. */
+    val notice: String? = null
 )

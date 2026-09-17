@@ -27,6 +27,24 @@
     <string name="unit_mgm3">mg/m³</string>
 
     <string name="source_line">Source: %1$s</string>
+
+    <string name="measured_at_station">Measured &#183; %1$s</string>
+    <string name="measured_no_station">Measured at a monitoring station</string>
+    <string name="station_with_distance">%1$s, %2$s away</string>
+    <string name="dominant_pollutant">driven by %1$s</string>
+    <string name="modelled_reading">Modelled &#183; ~11 km weather-model grid, not a station</string>
+    <string name="modelled_hint">Add a free aqicn.org or IQAir key under Data source for measured station readings.</string>
+    <string name="unit_aqi">AQI</string>
+    <string name="section_pollutants_aqi">Pollutant sub-indices</string>
+
+    <string name="menu_sources">Data source</string>
+    <string name="sources_explainer">Station feeds report real monitoring equipment near you and track haze far better than the keyless model fallback. Both keys are free.</string>
+    <string name="hint_waqi">aqicn.org token</string>
+    <string name="hint_iqair">IQAir API key</string>
+    <string name="link_waqi">Free token: aqicn.org/data-platform/token/</string>
+    <string name="link_iqair">Free key: iqair.com/air-pollution-data-api</string>
+    <string name="action_save">Save</string>
+    <string name="sources_saved">Data source updated</string>
     <string name="location_permission_denied">Location permission is off. Grant it, or pick a city instead.</string>
     <string name="location_services_off">Location is switched off on this device. Turn it on to follow your position.</string>
     <string name="location_no_fix">Could not get a position fix. Swipe down to try again.</string>

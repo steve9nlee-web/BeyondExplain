@@ -10,8 +10,8 @@ Pre-built APKs are in [`dist/`](dist/):
 
 | File | Notes |
 | --- | --- |
-| `dist/HazeIndex-1.1.apk` | Release build, ~4.7 MB — install this one |
-| `dist/HazeIndex-1.1-debug.apk` | Debug build, same app with debug symbols |
+| `dist/HazeIndex-1.2.apk` | Release build, ~4.7 MB — install this one |
+| `dist/HazeIndex-1.2-debug.apk` | Debug build, same app with debug symbols |
 
 Install on the phone: copy the APK across (or download it from GitHub on the device), open it,
 and allow "install from unknown sources" when Android asks. Android 7.0 (API 24) or newer.
@@ -22,8 +22,10 @@ steps. That key is fine for sideloading and testing; swap in a real keystore in
 
 ## What it shows
 
-- **Headline index** — Singapore's official **PSI (24-hour)** from NEA, or **US AQI** everywhere
-  else — colour-coded Good → Hazardous, with the matching health advice.
+- **Headline index** — Singapore's official **PSI (24-hour)** from NEA, or the AQI from the
+  nearest monitoring station — colour-coded Good → Hazardous, with the matching health advice,
+  and a line saying whether the number was **measured at a station or modelled** (see
+  [Data sources](#data-sources-and-why-accuracy-varies)).
 - **24-hour PM2.5 trend** — one bar per hour, each coloured by how bad that hour was, so you can
   see whether the haze is building or clearing.
 - **Current pollutants** — PM2.5, PM10, ozone, NO₂, SO₂ and CO.
@@ -56,21 +58,48 @@ Fixed locations: Singapore, Kuala Lumpur, Johor Bahru, George Town, Kuching, Kot
 Jakarta, Pekanbaru, Palembang, Pontianak, Bangkok, Chiang Mai, Manila, Bandar Seri Begawan,
 Hanoi, Ho Chi Minh City, Phnom Penh.
 
-## Data sources
+## Data sources, and why accuracy varies
 
-Both are free and need no API key, so there is nothing to configure before the first run.
+Not all air quality numbers are the same kind of number. This matters more than it sounds:
 
-- [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) —
-  `https://air-quality-api.open-meteo.com/v1/air-quality` — global pollutant concentrations,
-  US AQI and the hourly PM2.5 history.
-- [data.gov.sg / NEA PSI](https://data.gov.sg/) —
-  `https://api-open.data.gov.sg/v2/real-time/api/psi` (falls back to the older
-  `https://api.data.gov.sg/v1/environment/psi`) — the official Singapore PSI, which is the
-  number local advisories quote during a haze episode.
+| Source | Kind | Key | Notes |
+| --- | --- | --- | --- |
+| **NEA / data.gov.sg** | Measured | none | Singapore's official ground network. The PSI local advisories quote. Used automatically anywhere in Singapore. |
+| **aqicn.org (WAQI)** | Measured | free token | Nearest real monitoring station, worldwide. Aggregates the national networks — NEA, Malaysia's DOE, Thailand's PCD, US embassy monitors. |
+| **IQAir AirVisual** | Measured | free key | Nearest station's US AQI and dominant pollutant. The free tier does not include concentrations. |
+| **Open-Meteo** | **Modelled** | none | CAMS output on a ~11 km grid. Keyless and global, so it is the fallback — but it is a *simulation*, and during a haze episode it can sit well off what a station down the road is measuring. Also supplies the 24-hour trend line. |
 
-For Singapore the app calls both: NEA supplies the headline PSI and the regional breakdown,
-Open-Meteo supplies the trend line. If NEA is unreachable the app degrades to US AQI rather
-than failing.
+The app picks the best available and **says on screen which one it used**: either
+"Measured · Bedok, 2.1 km away · driven by PM2.5", or "Modelled · ~11 km weather-model
+grid, not a station".
+
+### Getting a station key (recommended)
+
+Out of the box, with no key, the app uses the model — except in Singapore, where the
+official NEA PSI needs no key. For measured readings everywhere else, open **Data source**
+in the toolbar overflow and paste one free key:
+
+- **aqicn.org** — https://aqicn.org/data-platform/token/ (instant, email only). This is the
+  one to get; coverage across Southeast Asia is good.
+- **IQAir** — https://www.iqair.com/air-pollution-data-api (free "Community" tier).
+
+The same screen lets you force a specific source instead of letting the app choose. Keys are
+stored in the app's own private `SharedPreferences` and are only ever sent to the service
+they belong to.
+
+### How a reading is assembled
+
+1. In Singapore the NEA PSI takes the headline, with the five-region breakdown.
+2. Otherwise a station reading (aqicn.org, then IQAir) takes the headline.
+3. Open-Meteo fills what is left — always the hourly trend, and the concentrations for
+   IQAir, which does not publish them.
+4. With no key and no station, the model stands alone and the screen says so.
+
+A configured source that fails is never swapped out silently: the reason ("aqicn.org token
+is not valid", "Rate limit reached for this API key") appears in the banner.
+
+Note that aqicn.org publishes **per-pollutant AQI sub-indices**, not concentrations, so when
+that source is in use the pollutant tiles are labelled `AQI` rather than `µg/m³`.
 
 ## Building from source
 
@@ -89,7 +118,9 @@ JDK 17 or newer, Gradle wrapper included (8.11.1), AGP 8.7.3, Kotlin 2.0.21.
 | `MainActivity.kt` | UI, swipe-to-refresh wiring, city picker, permission flow |
 | `HazeViewModel.kt` | Refresh state machine and follow-the-device tracking; survives rotation |
 | `DeviceLocation.kt` | Position fixes, foreground position updates, reverse geocoding |
-| `HazeRepository.kt` | The network calls and JSON parsing; also the US AQI maths |
+| `HazeRepository.kt` | The network calls, the source-priority chain and the merge rules |
+| `AirQualityParsers.kt` | One parser per feed, pure functions over a response body |
+| `Settings.kt` | API keys and the preferred source |
 | `ReportCache.kt` | Last reading persisted to `SharedPreferences` |
 | `TrendView.kt` | Hand-drawn 24-hour PM2.5 bar chart (no charting dependency) |
 | `Model.kt` | Report model plus the PSI / US AQI / PM2.5 band thresholds |
@@ -97,13 +128,15 @@ JDK 17 or newer, Gradle wrapper included (8.11.1), AGP 8.7.3, Kotlin 2.0.21.
 
 ## Known limitation
 
-The APKs here were compiled and unit-tested in a sandbox whose network policy blocks
-`open-meteo.com` and `data.gov.sg`, so the **live responses could not be exercised end to end** —
-the parsers were written against the documented response shapes and are defensive (missing
-fields, `null` readings, v2→v1 endpoint fallback, `current`→latest-hourly fallback), but the
-first real run on a phone is the first time the JSON is actually seen. If a field ever moves,
-`HazeRepository.kt` is the single place to adjust.
+The build machine's network policy blocks every one of these APIs, so **no live response was
+ever fetched during development**. To cover that, each parser is a pure function over a
+response body and every one is unit tested against a captured response shape — success and
+failure, including a bad aqicn.org token, an IQAir `incorrect_api_key`, the NEA v1 and v2
+shapes, and Open-Meteo with and without its `current` block. `./gradlew :app:testDebugUnitTest`
+runs 22 of these. That is a good deal stronger than "written from the docs", but it is still
+not the same as a real response: if a field moves, `AirQualityParsers.kt` is the one place to
+adjust, and each parser fails with a message the UI shows rather than crashing.
 
-The same applies to the location code: there is no GPS or geocoder in that sandbox, so the
-follow-the-device path was built and unit tested (distance maths, the Singapore bounding box,
-the stable device-city id) but never exercised against a real fix.
+Likewise there is no GPS or geocoder on that machine, so the follow-the-device path is unit
+tested (distance maths, the Singapore bounding box, the stable device-city id) but has never
+met a real position fix.

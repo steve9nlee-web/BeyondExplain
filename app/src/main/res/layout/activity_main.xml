@@ -114,6 +114,17 @@
                             android:text="" />
 
                         <TextView
+                            android:id="@+id/stationLine"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:drawablePadding="6dp"
+                            android:lineSpacingExtra="2dp"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp"
+                            android:text="" />
+
+                        <TextView
                             android:id="@+id/advice"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -162,6 +173,7 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/pollutantsTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             style="@style/SectionTitle"

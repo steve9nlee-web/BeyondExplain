@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.beyondexplain.hazeindex.databinding.ActivityMainBinding
+import com.beyondexplain.hazeindex.databinding.DialogSourcesBinding
 import com.beyondexplain.hazeindex.databinding.ItemRegionBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -78,6 +79,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_pick_city -> { showCityPicker(); true }
         R.id.action_my_location -> { toggleFollowDevice(); true }
+        R.id.action_sources -> { showSourceSettings(); true }
         else -> super.onOptionsItemSelected(item)
     }
 
@@ -128,6 +130,7 @@ class MainActivity : AppCompatActivity() {
             binding.indexValue.text = "--"
             binding.bandLabel.visibility = View.GONE
             binding.advice.text = ""
+            binding.stationLine.text = ""
             binding.trendView.setData(emptyList(), 0)
             binding.regionsCard.visibility = View.GONE
             binding.sourceLine.text = ""
@@ -147,6 +150,7 @@ class MainActivity : AppCompatActivity() {
         tint(binding.bandLabel, bandColor)
 
         binding.advice.text = report.band.advice
+        binding.stationLine.text = provenance(report)
 
         val clock = Times.cityClock(report.observedAtEpochSeconds, report.utcOffsetSeconds)
         binding.observedAt.text = when {
@@ -157,28 +161,73 @@ class MainActivity : AppCompatActivity() {
 
         binding.trendView.setData(report.trend, report.utcOffsetSeconds)
 
-        bindPollutants(report.pollutants)
+        bindPollutants(report.pollutants, report.pollutantUnit)
         bindRegions(report.regions)
 
         binding.sourceLine.text = getString(R.string.source_line, report.sourceLabel)
         binding.fetchedAt.text =
             getString(R.string.fetched_at, Times.relativeToNow(report.fetchedAtEpochMillis))
 
-        showBanner(state.error ?: if (report.fromCache) getString(R.string.cached_notice) else null)
+        showBanner(
+            state.error
+                ?: report.notice
+                ?: if (report.fromCache) getString(R.string.cached_notice) else null
+        )
     }
 
-    private fun bindPollutants(p: Pollutants) {
+    /** Says plainly whether the number was measured or simulated, and by what. */
+    private fun provenance(report: HazeReport): CharSequence {
+        if (!report.measured) {
+            return getString(R.string.modelled_reading) +
+                if (viewModel.settings().hasStationKey) "" else "\n" + getString(R.string.modelled_hint)
+        }
+
+        val station = report.stationName?.let { name ->
+            report.stationDistanceMetres
+                ?.let { getString(R.string.station_with_distance, name, Numbers.distance(it)) }
+                ?: name
+        }
+        val head = station
+            ?.let { getString(R.string.measured_at_station, it) }
+            ?: getString(R.string.measured_no_station)
+
+        val dominant = report.dominantPollutant
+            ?.let { getString(R.string.dominant_pollutant, Numbers.pollutantName(it)) }
+        return listOfNotNull(head, dominant).joinToString(" \u00b7 ")
+    }
+
+    private fun bindPollutants(p: Pollutants, unit: PollutantUnit) {
         binding.valuePm25.text = Numbers.concentration(p.pm25)
         binding.valuePm10.text = Numbers.concentration(p.pm10)
         binding.valueO3.text = Numbers.concentration(p.ozone)
         binding.valueNo2.text = Numbers.concentration(p.nitrogenDioxide)
         binding.valueSo2.text = Numbers.concentration(p.sulphurDioxide)
         binding.valueCo.text = Numbers.concentration(p.coMilligrams)
-        binding.unitCo.text = getString(R.string.unit_mgm3)
 
-        // PM2.5 is the haze pollutant, so colour it by severity.
+        // Sub-indices are already an AQI number, so the tiles have to say which it is.
+        val unitLabel = when (unit) {
+            PollutantUnit.AQI -> getString(R.string.unit_aqi)
+            PollutantUnit.MICROGRAMS -> getString(R.string.unit_ugm3)
+        }
+        listOf(
+            binding.unitPm25, binding.unitPm10, binding.unitO3, binding.unitNo2, binding.unitSo2
+        ).forEach { it.text = unitLabel }
+        binding.unitCo.text = when (unit) {
+            PollutantUnit.AQI -> unitLabel
+            PollutantUnit.MICROGRAMS -> getString(R.string.unit_mgm3)
+        }
+        binding.pollutantsTitle.setText(
+            when (unit) {
+                PollutantUnit.AQI -> R.string.section_pollutants_aqi
+                PollutantUnit.MICROGRAMS -> R.string.section_pollutants
+            }
+        )
+
+        // PM2.5 is the haze pollutant, so colour it by severity where that is meaningful.
         binding.valuePm25.setTextColor(
-            p.pm25?.let { BandColors.of(this, IndexScale.forPm25(it)) }
+            p.pm25?.takeIf { unit == PollutantUnit.MICROGRAMS }
+                ?.let { BandColors.of(this, IndexScale.forPm25(it)) }
+                ?: p.pm25?.let { BandColors.of(this, IndexScale.forUsAqi(it.toInt())) }
                 ?: ContextCompat.getColor(this, R.color.text_primary)
         )
     }
@@ -223,6 +272,40 @@ class MainActivity : AppCompatActivity() {
             .setSingleChoiceItems(names, checked) { dialog, which ->
                 viewModel.selectCity(Cities.ALL[which])
                 dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    // ---------------------------------------------------------- data source setup
+
+    private fun showSourceSettings() {
+        val settings = viewModel.settings()
+        val view = DialogSourcesBinding.inflate(layoutInflater)
+
+        view.waqiToken.setText(settings.waqiToken.orEmpty())
+        view.iqAirKey.setText(settings.iqAirKey.orEmpty())
+        when (settings.source) {
+            SourceChoice.AUTO -> view.sourceAuto
+            SourceChoice.WAQI -> view.sourceWaqi
+            SourceChoice.IQAIR -> view.sourceIqAir
+            SourceChoice.OPEN_METEO -> view.sourceOpenMeteo
+        }.isChecked = true
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.menu_sources)
+            .setView(view.root)
+            .setPositiveButton(R.string.action_save) { _, _ ->
+                settings.waqiToken = view.waqiToken.text?.toString()
+                settings.iqAirKey = view.iqAirKey.text?.toString()
+                settings.source = when (view.sourceGroup.checkedRadioButtonId) {
+                    R.id.sourceWaqi -> SourceChoice.WAQI
+                    R.id.sourceIqAir -> SourceChoice.IQAIR
+                    R.id.sourceOpenMeteo -> SourceChoice.OPEN_METEO
+                    else -> SourceChoice.AUTO
+                }
+                toast(getString(R.string.sources_saved))
+                viewModel.onSourceSettingsChanged()
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()

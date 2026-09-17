@@ -55,5 +55,22 @@ object Times {
 
 object Numbers {
     fun concentration(value: Double?): String =
-        if (value == null) "–" else String.format(Locale.getDefault(), "%.1f", value)
+        if (value == null) "\u2013" else String.format(Locale.getDefault(), "%.1f", value)
+
+    fun distance(metres: Double): String = when {
+        metres < 1_000 -> String.format(Locale.getDefault(), "%.0f m", metres)
+        metres < 10_000 -> String.format(Locale.getDefault(), "%.1f km", metres / 1_000)
+        else -> String.format(Locale.getDefault(), "%.0f km", metres / 1_000)
+    }
+
+    /** Feed codes such as "pm25" into something readable. */
+    fun pollutantName(code: String): String = when (code.lowercase(Locale.US)) {
+        "pm25", "pm2_5", "p2" -> "PM2.5"
+        "pm10", "p1" -> "PM10"
+        "o3" -> "ozone"
+        "no2" -> "NO\u2082"
+        "so2" -> "SO\u2082"
+        "co" -> "CO"
+        else -> code.uppercase(Locale.US)
+    }
 }
