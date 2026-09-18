@@ -10,8 +10,8 @@ Pre-built APKs are in [`dist/`](dist/):
 
 | File | Notes |
 | --- | --- |
-| `dist/HazeIndex-1.3.apk` | Release build, ~5.2 MB — install this one |
-| `dist/HazeIndex-1.3-debug.apk` | Debug build, same app with debug symbols |
+| `dist/HazeIndex-1.4.apk` | Release build, ~5.5 MB — install this one |
+| `dist/HazeIndex-1.4-debug.apk` | Debug build, same app with debug symbols |
 
 Install on the phone: copy the APK across (or download it from GitHub on the device), open it,
 and allow "install from unknown sources" when Android asks. Android 7.0 (API 24) or newer.
@@ -123,6 +123,22 @@ is not valid", "Rate limit reached for this API key") appears in the banner.
 
 Note that aqicn.org publishes **per-pollutant AQI sub-indices**, not concentrations, so when
 that source is in use the pollutant tiles are labelled `AQI` rather than `µg/m³`.
+
+## Launcher icon
+
+The gold "Haze Index — property of Synapse Asia Sdn Bhd" seal, generated from the supplied
+artwork into the full icon set:
+
+- `mipmap-{m,h,xh,xxh,xxxh}dpi/ic_launcher.png` — the emblem cut to a disc with transparent
+  corners, so it sits correctly in any launcher rather than as a black square.
+- `mipmap-{m,h,xh,xxh,xxxh}dpi/ic_launcher_foreground.png` + `drawable/ic_launcher_background.xml`
+  — the adaptive icon for Android 8+. The emblem is 70dp on the 108dp canvas, inside the 72dp
+  circle every mask is guaranteed to show, so no mask clips the ring.
+- The background layer is solid black to match the emblem's own backdrop, so the two adaptive
+  layers blend under parallax.
+
+The ring text is legible from xhdpi (96px) upward; at mdpi (48px) the seal reads as a mark
+rather than as words — inherent to any text-bearing circular badge at that size.
 
 ## Building from source
 
