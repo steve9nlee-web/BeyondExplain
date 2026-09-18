@@ -11,8 +11,8 @@ android {
         applicationId = "com.beyondexplain.hazeindex"
         minSdk = 24
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.4"
+        versionCode = 6
+        versionName = "1.5"
     }
 
     buildTypes {
@@ -37,6 +37,12 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -55,4 +61,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     // Gives the JVM tests a real org.json so every feed parser can be exercised offline.
     testImplementation("org.json:json:20250107")
+    // Runs the real activities on the JVM, so window-inset handling can be asserted.
+    testImplementation("org.robolectric:robolectric:4.13")
+    testImplementation("androidx.test:core:1.6.1")
 }

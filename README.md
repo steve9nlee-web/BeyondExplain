@@ -10,8 +10,8 @@ Pre-built APKs are in [`dist/`](dist/):
 
 | File | Notes |
 | --- | --- |
-| `dist/HazeIndex-1.4.apk` | Release build, ~5.5 MB — install this one |
-| `dist/HazeIndex-1.4-debug.apk` | Debug build, same app with debug symbols |
+| `dist/HazeIndex-1.5.apk` | Release build, ~5.5 MB — install this one |
+| `dist/HazeIndex-1.5-debug.apk` | Debug build, same app with debug symbols |
 
 Install on the phone: copy the APK across (or download it from GitHub on the device), open it,
 and allow "install from unknown sources" when Android asks. Android 7.0 (API 24) or newer.
@@ -124,6 +124,15 @@ is not valid", "Rate limit reached for this API key") appears in the banner.
 Note that aqicn.org publishes **per-pollutant AQI sub-indices**, not concentrations, so when
 that source is in use the pollutant tiles are labelled `AQI` rather than `µg/m³`.
 
+## Edge-to-edge
+
+Targeting SDK 35 means Android 15 lays the app out behind the status and navigation bars, so
+every piece of chrome asks for the insets it needs (`Insets.kt`): the toolbar and the map's
+header card move clear of the status bar and any notch, the scrolling content and the map's
+bottom card clear the navigation bar, and the map itself stays deliberately full bleed beneath
+them. The system bars are forced to light icons because the app is dark whatever the device
+theme is.
+
 ## Launcher icon
 
 The gold "Haze Index — property of Synapse Asia Sdn Bhd" seal, generated from the supplied
@@ -175,7 +184,8 @@ ever fetched during development**. To cover that, each parser is a pure function
 response body and every one is unit tested against a captured response shape — success and
 failure, including a bad aqicn.org token, an IQAir `incorrect_api_key`, the NEA v1 and v2
 shapes, and Open-Meteo with and without its `current` block. `./gradlew :app:testDebugUnitTest`
-runs 33 of these, the map's station-bounds and modelled-grid feeds included. That is a good deal stronger than "written from the docs", but it is still
+runs 37 of these, the map's station-bounds and modelled-grid feeds included, plus four
+Robolectric tests that start the real activities and assert the window-inset handling. That is a good deal stronger than "written from the docs", but it is still
 not the same as a real response: if a field moves, `AirQualityParsers.kt` is the one place to
 adjust, and each parser fails with a message the UI shows rather than crashing.
 

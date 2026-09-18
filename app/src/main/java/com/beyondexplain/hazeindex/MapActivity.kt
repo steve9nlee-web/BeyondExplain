@@ -8,6 +8,8 @@ import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -37,6 +39,10 @@ class MapActivity : AppCompatActivity() {
     private lateinit var city: City
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         super.onCreate(savedInstanceState)
 
         // osmdroid needs its cache and a real user agent set up before the view exists.
@@ -50,6 +56,10 @@ class MapActivity : AppCompatActivity() {
         binding = ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        // The map itself stays full bleed under the bars; the cards over it do not.
+        binding.headerCard.marginForSystemBars(top = true)
+        binding.bottomCard.marginForSystemBars(bottom = true)
 
         city = cityFromIntent()
         setUpMap()

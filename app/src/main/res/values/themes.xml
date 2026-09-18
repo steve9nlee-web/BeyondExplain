@@ -6,7 +6,7 @@
         <item name="android:colorBackground">@color/background</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/text_primary</item>
-        <item name="android:statusBarColor">@color/background</item>
+        <!-- The bars are transparent under edge-to-edge; see enableEdgeToEdge in the activities. -->
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
     </style>

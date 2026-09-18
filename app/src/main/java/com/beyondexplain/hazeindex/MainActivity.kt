@@ -2,6 +2,7 @@ package com.beyondexplain.hazeindex
 
 import android.Manifest
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Menu
@@ -9,6 +10,8 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -37,10 +40,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // The app is dark whatever the system theme is, so the bars always want
+        // light icons; `auto` would pick dark ones on a light-themed device.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+
+        // Keep the toolbar clear of the status bar and the content clear of the
+        // navigation bar, now that the window runs the full height of the screen.
+        binding.appBar.padForSystemBars(top = true)
+        binding.scroll.padForSystemBars(bottom = true)
 
         binding.swipeRefresh.setColorSchemeColors(
             ContextCompat.getColor(this, R.color.accent),
