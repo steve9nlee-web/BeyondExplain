@@ -17,6 +17,10 @@ import org.robolectric.annotation.Config
  * Targeting SDK 35 puts the window behind the status bar on Android 15. These tests
  * assert the app actually moves its chrome out from under the system bars, which is
  * the bug that let the toolbar sit hidden beneath the status bar.
+ *
+ * Insets are dispatched at the content root, the way the real window does it, rather
+ * than straight at the view under test: dispatching at the child would still pass if
+ * a parent swallowed the insets before they ever got there.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = android.app.Application::class)
@@ -34,8 +38,7 @@ class EdgeToEdgeTest {
         val scroll = activity.findViewById<android.view.View>(R.id.scroll)
 
         val before = appBar.paddingTop
-        ViewCompat.dispatchApplyWindowInsets(appBar, systemBarInsets(top = 96, bottom = 48))
-        ViewCompat.dispatchApplyWindowInsets(scroll, systemBarInsets(top = 96, bottom = 48))
+        activity.dispatchFromRoot(systemBarInsets(top = 96, bottom = 48))
 
         assertEquals(before + 96, appBar.paddingTop)
         assertEquals(48, scroll.paddingBottom)
@@ -46,7 +49,7 @@ class EdgeToEdgeTest {
         val activity = Robolectric.buildActivity(MainActivity::class.java).setup().get()
         val appBar = activity.findViewById<android.view.View>(R.id.appBar)
 
-        repeat(4) { ViewCompat.dispatchApplyWindowInsets(appBar, systemBarInsets(top = 96, bottom = 48)) }
+        repeat(4) { activity.dispatchFromRoot(systemBarInsets(top = 96, bottom = 48)) }
 
         assertEquals(96, appBar.paddingTop)
     }
@@ -56,8 +59,8 @@ class EdgeToEdgeTest {
         val activity = Robolectric.buildActivity(MainActivity::class.java).setup().get()
         val appBar = activity.findViewById<android.view.View>(R.id.appBar)
 
-        ViewCompat.dispatchApplyWindowInsets(appBar, systemBarInsets(top = 96, bottom = 48))
-        ViewCompat.dispatchApplyWindowInsets(appBar, systemBarInsets(top = 24, bottom = 0))
+        activity.dispatchFromRoot(systemBarInsets(top = 96, bottom = 48))
+        activity.dispatchFromRoot(systemBarInsets(top = 24, bottom = 0))
 
         assertEquals(24, appBar.paddingTop)
     }
@@ -75,8 +78,7 @@ class EdgeToEdgeTest {
         val headerBefore = (header.layoutParams as android.view.ViewGroup.MarginLayoutParams).topMargin
         val bottomBefore = (bottom.layoutParams as android.view.ViewGroup.MarginLayoutParams).bottomMargin
 
-        ViewCompat.dispatchApplyWindowInsets(header, systemBarInsets(top = 96, bottom = 48))
-        ViewCompat.dispatchApplyWindowInsets(bottom, systemBarInsets(top = 96, bottom = 48))
+        activity.dispatchFromRoot(systemBarInsets(top = 96, bottom = 48))
 
         assertEquals(
             headerBefore + 96,
@@ -89,5 +91,10 @@ class EdgeToEdgeTest {
         // The map is meant to run under the bars; nothing should have inset it.
         assertEquals(0, map.paddingTop)
         assertTrue(Rect().let { map.getGlobalVisibleRect(it); true })
+    }
+
+    /** Hands the insets to the window's content view and lets them travel down. */
+    private fun android.app.Activity.dispatchFromRoot(insets: WindowInsetsCompat) {
+        ViewCompat.dispatchApplyWindowInsets(findViewById(android.R.id.content), insets)
     }
 }

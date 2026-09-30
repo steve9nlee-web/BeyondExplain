@@ -4,6 +4,9 @@ An Android app that shows the current haze / air quality index for Southeast Asi
 **Swipe down on the main screen and it goes out to the internet and pulls a fresh reading** —
 there is no background cache being re-served, every pull is a live HTTP request.
 
+For how this was built — the build order, the runtime data flow, the build and release loop,
+the verification strategy and what went wrong along the way — see [WORKFLOW.md](WORKFLOW.md).
+
 ## Download
 
 Pre-built APKs are in [`dist/`](dist/):
