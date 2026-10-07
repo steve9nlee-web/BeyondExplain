@@ -151,3 +151,10 @@ data class AreaSnapshot(
     /** Set for the modelled grid, so each sample can be drawn as a cell rather than a pin. */
     val cellRadiusMetres: Double? = null
 )
+
+/**
+ * The one state worth prompting about: the reading is a model estimate and the user
+ * has no station key configured, so a measurement is one free token away.
+ */
+fun needsStationKeyPrompt(report: HazeReport, hasStationKey: Boolean): Boolean =
+    !report.measured && !hasStationKey

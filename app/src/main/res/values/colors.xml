@@ -7,6 +7,7 @@
     <color name="text_primary">#FFECEFF3</color>
     <color name="text_secondary">#FF9AA4B0</color>
     <color name="accent">#FF63B3ED</color>
+    <color name="banner_action">#FF11293A</color>
 
     <color name="band_good">#FF4CC96B</color>
     <color name="band_moderate">#FFF2C94C</color>

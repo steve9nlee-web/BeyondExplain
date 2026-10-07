@@ -2,6 +2,7 @@ package com.beyondexplain.hazeindex
 
 import android.Manifest
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
@@ -183,10 +184,18 @@ class MainActivity : AppCompatActivity() {
         binding.fetchedAt.text =
             getString(R.string.fetched_at, Times.relativeToNow(report.fetchedAtEpochMillis))
 
+        // A modelled reading with no key is the one state worth nagging about: it is the
+        // difference between an estimate and a measurement, and it is one tap to fix.
+        val needsStationKey = needsStationKeyPrompt(report, viewModel.settings().hasStationKey)
         showBanner(
-            state.error
+            message = state.error
                 ?: report.notice
-                ?: if (report.fromCache) getString(R.string.cached_notice) else null
+                ?: when {
+                    needsStationKey -> getString(R.string.modelled_cta)
+                    report.fromCache -> getString(R.string.cached_notice)
+                    else -> null
+                },
+            opensDataSource = needsStationKey && state.error == null && report.notice == null
         )
     }
 
@@ -265,9 +274,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showBanner(message: String?) {
+    private fun showBanner(message: String?, opensDataSource: Boolean = false) {
         binding.statusBanner.visibility = if (message == null) View.GONE else View.VISIBLE
         binding.statusBanner.text = message.orEmpty()
+        binding.statusBanner.isClickable = opensDataSource
+        binding.statusBanner.backgroundTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(
+                this,
+                if (opensDataSource) R.color.banner_action else R.color.surface_variant
+            )
+        )
+        binding.statusBanner.setTextColor(
+            ContextCompat.getColor(
+                this,
+                if (opensDataSource) R.color.accent else R.color.text_primary
+            )
+        )
+        binding.statusBanner.setOnClickListener(
+            if (opensDataSource) View.OnClickListener { showSourceSettings() } else null
+        )
     }
 
     private fun tint(view: View, color: Int) {

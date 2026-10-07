@@ -75,3 +75,36 @@ class DeviceLocationLogicTest {
         assertTrue(Cities.isResolved(first))
     }
 }
+
+class StationKeyPromptTest {
+
+    private fun report(measured: Boolean) = HazeReport(
+        city = Cities.SINGAPORE,
+        indexName = "US AQI",
+        indexValue = 98,
+        band = Band.MODERATE,
+        pollutants = Pollutants(pm25 = 31.9),
+        observedAtEpochSeconds = 0,
+        utcOffsetSeconds = 0,
+        fetchedAtEpochMillis = 0,
+        sourceLabel = "",
+        measured = measured
+    )
+
+    @Test
+    fun `a modelled reading with no key prompts for one`() {
+        assertTrue(needsStationKeyPrompt(report(measured = false), hasStationKey = false))
+    }
+
+    @Test
+    fun `a measured reading never prompts, key or not`() {
+        assertFalse(needsStationKeyPrompt(report(measured = true), hasStationKey = false))
+        assertFalse(needsStationKeyPrompt(report(measured = true), hasStationKey = true))
+    }
+
+    @Test
+    fun `a modelled reading with a key already configured does not nag`() {
+        // The key is set but the station call failed; that reason is shown instead.
+        assertFalse(needsStationKeyPrompt(report(measured = false), hasStationKey = true))
+    }
+}

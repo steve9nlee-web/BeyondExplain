@@ -34,6 +34,9 @@
     <string name="dominant_pollutant">driven by %1$s</string>
     <string name="modelled_reading">Modelled &#183; ~11 km weather-model grid, not a station</string>
     <string name="modelled_hint">Add a free aqicn.org or IQAir key under Data source for measured station readings.</string>
+    <string name="modelled_cta">This is a computer model estimate, not a measurement — during haze it can read far below the real figure.
+
+Tap here to add a free station key ›</string>
     <string name="unit_aqi">AQI</string>
     <string name="section_pollutants_aqi">Pollutant sub-indices</string>
 

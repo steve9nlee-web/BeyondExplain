@@ -13,8 +13,8 @@ Pre-built APKs are in [`dist/`](dist/):
 
 | File | Notes |
 | --- | --- |
-| `dist/HazeIndex-1.6.apk` | Release build, ~5.5 MB — install this one |
-| `dist/HazeIndex-1.6-debug.apk` | Debug build, same app with debug symbols |
+| `dist/HazeIndex-1.7.apk` | Release build, ~5.5 MB — install this one |
+| `dist/HazeIndex-1.7-debug.apk` | Debug build, same app with debug symbols |
 
 Install on the phone: copy the APK across (or download it from GitHub on the device), open it,
 and allow "install from unknown sources" when Android asks. Android 7.0 (API 24) or newer.
@@ -102,7 +102,20 @@ The app picks the best available and **says on screen which one it used**: eithe
 "Measured · Bedok, 2.1 km away · driven by PM2.5", or "Modelled · ~11 km weather-model
 grid, not a station".
 
-### Getting a station key (recommended)
+### Getting a station key (do this first)
+
+Without a key the app can only show the model, and during a haze episode the model reads
+**far** below reality. A side-by-side on 7 Oct 2026 in George Town:
+
+| | PM2.5 | US AQI | Verdict |
+| --- | --- | --- | --- |
+| IQAir, 2 real stations | 93.2 µg/m³ | **177** | Unhealthy |
+| This app, CAMS model, no key | 31.9 µg/m³ | 98 | Moderate |
+
+Identical index arithmetic — the model simply under-predicted the smoke by 2.9×. That is the
+whole gap, and a free token closes it. The app now says so on screen: a modelled reading with
+no key configured shows a tappable prompt that opens the key screen directly.
+
 
 Out of the box, with no key, the app uses the model — except in Singapore, where the
 official NEA PSI needs no key. For measured readings everywhere else, open **Data source**

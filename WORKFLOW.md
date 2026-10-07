@@ -5,7 +5,7 @@ Written from the actual session that produced it, including the things that went
 
 - **Repo:** `steve9nlee-web/BeyondExplain`, branch `claude/haze-index-apk-app-fol9rv`
 - **App:** `com.beyondexplain.hazeindex` — Android 7.0 (API 24) and up
-- **Current:** v1.6 (versionCode 7), release APK ~5.5 MB in [`dist/`](dist/)
+- **Current:** v1.7 (versionCode 8), release APK ~5.5 MB in [`dist/`](dist/)
 
 ---
 
@@ -31,7 +31,8 @@ needed, and what proved it worked.
 | 4 | `cddd659` | An interactive map, chosen location on top | osmdroid + OpenStreetMap: no API key, no Play Services | +11 tests (bounds feed, grid, viewport maths) |
 | 5 | `d51021d` | Use the supplied seal as the app logo | Measure the emblem, generate the full density set, disc-cut so launchers don't box it | Lint back to baseline, 0 icon warnings |
 | 6 | `8830e0e` | "The app top section is blocked" | Real defect: `targetSdk 35` forces edge-to-edge and nothing handled window insets | +4 Robolectric tests, **checked against the unfixed code first** |
-| 7 | this one | Merge the pollutant sub-indices into the AQI card | One card for the whole current picture; a screenshot finally made the layout judgeable | Layout rendered to a PNG and inspected |
+| 7 | `54c461b` | Merge the pollutant sub-indices into the AQI card | One card for the whole current picture; a screenshot finally made the layout judgeable | Layout rendered to a PNG and inspected |
+| 8 | this one | "Why is the index totally different from IQAir?" | Not a bug: the app was in its keyless model fallback. Made that state loud and one tap to fix | 3 tests on the prompt rule; banner rendered |
 
 ### What each round actually changed
 
@@ -282,6 +283,10 @@ canvas, inside the 72 dp circle every mask is guaranteed to show).
   station reading (Minden, Pulau Pinang, 5.6 km away), real reverse-geocoding, and a populated
   trend chart. The feeds, the station merge and the follow-the-device path all work against the
   live services.
+- **The model fallback is not a substitute for a station.** Measured against IQAir in George
+  Town on 7 Oct 2026: 93.2 µg/m³ of PM2.5 (AQI 177) versus the model's 31.9 µg/m³ (AQI 98).
+  Same arithmetic, 2.9× different input. The app now prompts for a free key whenever it is
+  running on the model, because no amount of presentation fixes a missing measurement.
 - **Headline vs sub-index mismatch.** That same screenshot showed an overall AQI of 88 beside a
   PM2.5 sub-index of 166. Both come from the same aqicn response, so this is upstream: WAQI's
   overall `aqi` and its per-pollutant `iaqi` values are not always on the same averaging window.
