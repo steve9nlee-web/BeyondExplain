@@ -13,8 +13,8 @@ Pre-built APKs are in [`dist/`](dist/):
 
 | File | Notes |
 | --- | --- |
-| `dist/HazeIndex-1.5.apk` | Release build, ~5.5 MB — install this one |
-| `dist/HazeIndex-1.5-debug.apk` | Debug build, same app with debug symbols |
+| `dist/HazeIndex-1.6.apk` | Release build, ~5.5 MB — install this one |
+| `dist/HazeIndex-1.6-debug.apk` | Debug build, same app with debug symbols |
 
 Install on the phone: copy the APK across (or download it from GitHub on the device), open it,
 and allow "install from unknown sources" when Android asks. Android 7.0 (API 24) or newer.
@@ -25,6 +25,9 @@ steps. That key is fine for sideloading and testing; swap in a real keystore in
 
 ## What it shows
 
+- **One card at the top** carrying the whole current picture: the headline index, its band,
+  where the number came from, the health advice and all six pollutant sub-indices, so nothing
+  that matters needs a scroll.
 - **Headline index** — Singapore's official **PSI (24-hour)** from NEA, or the AQI from the
   nearest monitoring station — colour-coded Good → Hazardous, with the matching health advice,
   and a line saying whether the number was **measured at a station or modelled** (see

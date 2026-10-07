@@ -5,7 +5,7 @@ Written from the actual session that produced it, including the things that went
 
 - **Repo:** `steve9nlee-web/BeyondExplain`, branch `claude/haze-index-apk-app-fol9rv`
 - **App:** `com.beyondexplain.hazeindex` — Android 7.0 (API 24) and up
-- **Current:** v1.5 (versionCode 6), release APK ~5.5 MB in [`dist/`](dist/)
+- **Current:** v1.6 (versionCode 7), release APK ~5.5 MB in [`dist/`](dist/)
 
 ---
 
@@ -31,6 +31,7 @@ needed, and what proved it worked.
 | 4 | `cddd659` | An interactive map, chosen location on top | osmdroid + OpenStreetMap: no API key, no Play Services | +11 tests (bounds feed, grid, viewport maths) |
 | 5 | `d51021d` | Use the supplied seal as the app logo | Measure the emblem, generate the full density set, disc-cut so launchers don't box it | Lint back to baseline, 0 icon warnings |
 | 6 | `8830e0e` | "The app top section is blocked" | Real defect: `targetSdk 35` forces edge-to-edge and nothing handled window insets | +4 Robolectric tests, **checked against the unfixed code first** |
+| 7 | this one | Merge the pollutant sub-indices into the AQI card | One card for the whole current picture; a screenshot finally made the layout judgeable | Layout rendered to a PNG and inspected |
 
 ### What each round actually changed
 
@@ -215,7 +216,7 @@ display and no KVM for an emulator. Every constraint was compensated deliberatel
 | Call the air quality APIs | Parsers are pure functions over a response body; 26 tests run captured responses through them, success **and** failure |
 | Get a position fix | Distance maths, the Singapore bounding box and the stable device-city id are plain Kotlin, tested directly |
 | Run an emulator | `org.json` and Robolectric on the JVM classpath; Robolectric starts the real activities |
-| See the screen | Icon output rendered to a preview sheet at true pixel sizes |
+| See the screen | `ScreenRenderTest` draws the real inflated layout to a PNG via Robolectric's native graphics mode, so a layout change can be looked at before it ships; icons rendered to a preview sheet at true pixel sizes |
 
 **37 tests in 5 classes:**
 
@@ -277,9 +278,14 @@ canvas, inside the 72 dp circle every mask is guaranteed to show).
 
 ## 9. Open items
 
-- **No live response has ever been fetched.** The parsers are defensive and tested against
-  captured shapes, but the first run on a real phone is the first time the real JSON is seen. If
-  a field moves, `AirQualityParsers.kt` is the one place to change.
+- ~~No live response has ever been fetched.~~ **Resolved by a user screenshot:** a real aqicn
+  station reading (Minden, Pulau Pinang, 5.6 km away), real reverse-geocoding, and a populated
+  trend chart. The feeds, the station merge and the follow-the-device path all work against the
+  live services.
+- **Headline vs sub-index mismatch.** That same screenshot showed an overall AQI of 88 beside a
+  PM2.5 sub-index of 166. Both come from the same aqicn response, so this is upstream: WAQI's
+  overall `aqi` and its per-pollutant `iaqi` values are not always on the same averaging window.
+  Worth surfacing in the UI rather than leaving the reader to reconcile it.
 - **No real position fix, and no tile ever drawn.** Same reason.
 - **Debug signing.** Fine for sideloading, not for distribution.
 - **Icon text at mdpi.** The ring text reads as a mark rather than words at 48 px — inherent to a
